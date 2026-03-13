@@ -41,10 +41,16 @@ document.addEventListener('DOMContentLoaded', () => {
 // Clock Functions
 function updateClock() {
     const now = new Date();
-    const hours = String(now.getUTCHours()).padStart(2, '0');
-    const minutes = String(now.getUTCMinutes()).padStart(2, '0');
-    const seconds = String(now.getUTCSeconds()).padStart(2, '0');
-    document.getElementById('clock').textContent = `${hours}:${minutes}:${seconds}`;
+    // Arizona time (Mountain Standard Time - UTC-7)
+    const options = { 
+        timeZone: 'America/Phoenix',
+        hour12: false,
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+    };
+    const timeString = now.toLocaleTimeString('en-US', options);
+    document.getElementById('clock').textContent = timeString;
 }
 
 function updateGreeting() {
@@ -66,19 +72,18 @@ async function fetchWeather() {
     const weatherEl = document.getElementById('weather');
     
     try {
-        // Try to get user's location, fallback to London
-        const response = await fetch('https://wttr.in/London?format=j1');
+        // Get weather for Phoenix, Arizona (Fahrenheit)
+        const response = await fetch('https://wttr.in/Phoenix?format=j1');
         const data = await response.json();
         
         const current = data.current_condition[0];
-        const temp = current.temp_C;
+        const temp = current.temp_F;  // Changed to Fahrenheit
         const desc = current.weatherDesc[0].value;
-        const location = data.nearest_area[0].areaName[0].value;
         
         weatherEl.innerHTML = `
-            <div class="weather-temp">${temp}°C</div>
+            <div class="weather-temp">${temp}°F</div>
             <div class="weather-desc">${desc}</div>
-            <div class="weather-location">📍 ${location}</div>
+            <div class="weather-location">📍 Phoenix, AZ</div>
         `;
     } catch (error) {
         weatherEl.innerHTML = `

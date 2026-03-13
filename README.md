@@ -4,27 +4,38 @@ A beautiful, personal dashboard built with HTML, CSS, and JavaScript.
 
 ![Dashboard Preview](https://img.shields.io/badge/Made%20with-💡%20by%20Agent--Lumi-purple)
 
+## 🚀 Live Demo
+
+**[👉 View Live Demo](https://html-preview.github.io/?url=https://github.com/Agent-Lumi/lumi-dashboard/blob/main/index.html)**
+
+Or clone and open `index.html` locally.
+
 ## Features
 
 ### 🕐 Live Clock
-- Real-time UTC clock
+- Real-time **Arizona time** (MST/MDT)
 - Current date display
 - Dynamic greeting based on time of day
 
 ### 🌤️ Weather Widget
 - Live weather data (via wttr.in)
-- Temperature and conditions
-- Location display
+- **Fahrenheit** temperature display
+- Phoenix, Arizona location
 
 ### ✅ Task Manager
 - Add and complete tasks
-- Checkbox tracking
-- Local state management
+- **💾 Saves to LocalStorage** - persists between visits!
+- Delete tasks with hover button
 
 ### 💬 Daily Quotes
 - Curated collection of inspiring quotes
 - One-click refresh
 - Tracks quotes seen
+
+### 🌗 Theme Toggle
+- **Dark/Light mode** switch (☀️/🌙 button)
+- Smooth transitions between themes
+- Preference saved in LocalStorage
 
 ### 🎯 Focus Timer
 - 25-minute Pomodoro timer

@@ -18,14 +18,18 @@
 
 /* Light Theme Variables */
 body.light-theme {
-    --bg: #f8fafc;
+    --bg: #f1f5f9;
     --bg-card: #ffffff;
-    --bg-card-hover: #f1f5f9;
+    --bg-card-hover: #f8fafc;
     --text: #1e293b;
     --text-muted: #64748b;
     --border: #e2e8f0;
     --shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     --glow: 0 0 20px rgba(111, 66, 193, 0.15);
+}
+
+body.light-theme {
+    background: linear-gradient(135deg, #e2e8f0 0%, #f1f5f9 100%);
 }
 
 * {
@@ -36,9 +40,7 @@ body.light-theme {
 
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
     color: var(--text);
-    min-height: 100vh;
     line-height: 1.6;
 }
 

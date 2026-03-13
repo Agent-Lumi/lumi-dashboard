@@ -27,16 +27,114 @@ let isTimerRunning = false;
 let quotesSeen = 1;
 let tasksCompleted = 0;
 let focusSessions = 0;
+let tasks = []; // Store tasks in memory
 
 // Initialize Dashboard
 document.addEventListener('DOMContentLoaded', () => {
+    loadTheme(); // Load saved theme first
+    loadData(); // Load saved data
     updateClock();
     setInterval(updateClock, 1000);
     updateGreeting();
     updateDate();
     fetchWeather();
     setupTaskListeners();
+    loadTasks(); // Load saved tasks
 });
+
+// Theme Toggle Functions
+function toggleTheme() {
+    const body = document.body;
+    const isLight = body.classList.toggle('light-theme');
+    
+    // Save theme preference
+    localStorage.setItem('lumiTheme', isLight ? 'light' : 'dark');
+    
+    // Update toggle button icon
+    const toggleBtn = document.getElementById('themeToggle');
+    if (toggleBtn) {
+        toggleBtn.textContent = isLight ? '🌙' : '☀️';
+        toggleBtn.title = isLight ? 'Switch to dark mode' : 'Switch to light mode';
+    }
+}
+
+function loadTheme() {
+    const savedTheme = localStorage.getItem('lumiTheme');
+    if (savedTheme === 'light') {
+        document.body.classList.add('light-theme');
+    }
+}
+
+// Data Persistence Functions
+function saveData() {
+    const data = {
+        quotesSeen: quotesSeen,
+        tasksCompleted: tasksCompleted,
+        focusSessions: focusSessions,
+        tasks: tasks
+    };
+    localStorage.setItem('lumiDashboardData', JSON.stringify(data));
+}
+
+function loadData() {
+    const saved = localStorage.getItem('lumiDashboardData');
+    if (saved) {
+        try {
+            const data = JSON.parse(saved);
+            quotesSeen = data.quotesSeen || 1;
+            tasksCompleted = data.tasksCompleted || 0;
+            focusSessions = data.focusSessions || 0;
+            tasks = data.tasks || [];
+            updateStats();
+        } catch (e) {
+            console.log('Error loading saved data:', e);
+        }
+    }
+}
+
+function loadTasks() {
+    if (tasks.length > 0) {
+        const taskList = document.getElementById('taskList');
+        taskList.innerHTML = ''; // Clear default tasks
+        
+        tasks.forEach(task => {
+            const li = document.createElement('li');
+            li.className = 'task-item';
+            if (task.completed) li.classList.add('completed');
+            
+            li.innerHTML = `
+                <input type="checkbox" id="${task.id}" ${task.completed ? 'checked' : ''}>
+                <label for="${task.id}">${escapeHtml(task.text)}</label>
+                <button class="delete-task" onclick="deleteTask('${task.id}')">×</button>
+            `;
+            
+            li.querySelector('input').addEventListener('change', handleTaskToggle);
+            taskList.appendChild(li);
+        });
+        
+        updateTaskStats();
+    }
+}
+
+function saveTasks() {
+    saveData();
+}
+
+function updateTaskStats() {
+    const checked = document.querySelectorAll('.task-item.completed').length;
+    tasksCompleted = checked;
+    updateStats();
+    saveData();
+}
+
+function deleteTask(taskId) {
+    tasks = tasks.filter(t => t.id !== taskId);
+    const taskEl = document.getElementById(taskId);
+    if (taskEl) {
+        taskEl.closest('.task-item').remove();
+    }
+    saveData();
+}
 
 // Clock Functions
 function updateClock() {
@@ -104,6 +202,7 @@ function refreshQuote() {
     
     quotesSeen++;
     updateStats();
+    saveData();
 }
 
 // Task Functions
@@ -116,14 +215,24 @@ function setupTaskListeners() {
 
 function handleTaskToggle(e) {
     const taskItem = e.target.closest('.task-item');
-    if (e.target.checked) {
+    const taskId = e.target.id;
+    const isChecked = e.target.checked;
+    
+    // Update visual state
+    if (isChecked) {
         taskItem.classList.add('completed');
-        tasksCompleted++;
     } else {
         taskItem.classList.remove('completed');
-        tasksCompleted--;
     }
-    updateStats();
+    
+    // Update in-memory tasks
+    const task = tasks.find(t => t.id === taskId);
+    if (task) {
+        task.completed = isChecked;
+    }
+    
+    updateTaskStats();
+    saveTasks();
 }
 
 function handleTaskKeypress(e) {
@@ -137,20 +246,30 @@ function addTask() {
     const taskText = input.value.trim();
     
     if (taskText) {
-        const taskList = document.getElementById('taskList');
         const taskId = `task${Date.now()}`;
+        const taskList = document.getElementById('taskList');
         
+        // Add to in-memory storage
+        tasks.push({
+            id: taskId,
+            text: taskText,
+            completed: false
+        });
+        
+        // Create DOM element
         const li = document.createElement('li');
         li.className = 'task-item';
         li.innerHTML = `
             <input type="checkbox" id="${taskId}">
             <label for="${taskId}">${escapeHtml(taskText)}</label>
+            <button class="delete-task" onclick="deleteTask('${taskId}')">×</button>
         `;
         
         li.querySelector('input').addEventListener('change', handleTaskToggle);
         taskList.appendChild(li);
         
         input.value = '';
+        saveData();
     }
 }
 
@@ -173,6 +292,7 @@ function startTimer() {
                 isTimerRunning = false;
                 focusSessions++;
                 updateStats();
+                saveData();
                 alert('🎉 Focus session complete! Great job!');
                 resetTimer();
             }

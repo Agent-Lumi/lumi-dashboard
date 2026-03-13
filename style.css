@@ -16,6 +16,18 @@
     --glow: 0 0 20px rgba(111, 66, 193, 0.3);
 }
 
+/* Light Theme Variables */
+body.light-theme {
+    --bg: #f8fafc;
+    --bg-card: #ffffff;
+    --bg-card-hover: #f1f5f9;
+    --text: #1e293b;
+    --text-muted: #64748b;
+    --border: #e2e8f0;
+    --shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    --glow: 0 0 20px rgba(111, 66, 193, 0.15);
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -38,6 +50,7 @@ body {
 
 /* Header */
 header {
+    position: relative;
     text-align: center;
     margin-bottom: 2rem;
     padding: 2rem;
@@ -72,6 +85,31 @@ h1 {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+}
+
+.theme-toggle {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.theme-toggle:hover {
+    background: var(--bg-card-hover);
+    transform: scale(1.1);
+    border-color: var(--primary);
 }
 
 .greeting {
@@ -219,6 +257,32 @@ h1 {
 .task-item.completed label {
     text-decoration: line-through;
     color: var(--text-muted);
+}
+
+.delete-task {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    opacity: 0;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.task-item:hover .delete-task {
+    opacity: 1;
+}
+
+.delete-task:hover {
+    background: var(--error);
+    color: white;
+    opacity: 1;
 }
 
 .task-input {

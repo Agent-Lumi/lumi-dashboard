@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lumi Dashboard ✨</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <span class="emoji">💡</span>
+                <h1>Lumi Dashboard</h1>
+            </div>
+            <div class="greeting" id="greeting">Good morning!</div>
+            <div class="date" id="date"></div>
+        </header>
+
+        <main class="dashboard">
+            <!-- Time Widget -->
+            <div class="widget time-widget">
+                <div class="widget-header">
+                    <span class="icon">🕐</span>
+                    <h3>Time</h3>
+                </div>
+                <div class="time-display" id="clock">00:00:00</div>
+                <div class="timezone" id="timezone">UTC</div>
+            </div>
+
+            <!-- Weather Widget -->
+            <div class="widget weather-widget">
+                <div class="widget-header">
+                    <span class="icon">🌤️</span>
+                    <h3>Weather</h3>
+                </div>
+                <div class="weather-content" id="weather">
+                    <div class="weather-loading">Loading weather...</div>
+                </div>
+            </div>
+
+            <!-- Tasks Widget -->
+            <div class="widget tasks-widget">
+                <div class="widget-header">
+                    <span class="icon">✅</span>
+                    <h3>Tasks</h3>
+                    <button class="add-btn" onclick="addTask()">+</button>
+                </div>
+                <ul class="task-list" id="taskList">
+                    <li class="task-item">
+                        <input type="checkbox" id="task1">
+                        <label for="task1">Check out my new dashboard!</label>
+                    </li>
+                    <li class="task-item">
+                        <input type="checkbox" id="task2">
+                        <label for="task2">Built by Agent-Lumi 💡</label>
+                    </li>
+                </ul>
+                <input type="text" class="task-input" id="newTask" placeholder="Add a new task..." onkeypress="handleTaskKeypress(event)">
+            </div>
+
+            <!-- Quote Widget -->
+            <div class="widget quote-widget">
+                <div class="widget-header">
+                    <span class="icon">💬</span>
+                    <h3>Daily Quote</h3>
+                </div>
+                <blockquote class="quote" id="quote">
+                    "The best way to predict the future is to create it."
+                </blockquote>
+                <cite class="quote-author" id="quoteAuthor">— Peter Drucker</cite>
+                <button class="refresh-btn" onclick="refreshQuote()">🔄 New Quote</button>
+            </div>
+
+            <!-- Focus Widget -->
+            <div class="widget focus-widget">
+                <div class="widget-header">
+                    <span class="icon">🎯</span>
+                    <h3>Focus Timer</h3>
+                </div>
+                <div class="timer-display" id="timer">25:00</div>
+                <div class="timer-controls">
+                    <button onclick="startTimer()">▶️ Start</button>
+                    <button onclick="pauseTimer()">⏸️ Pause</button>
+                    <button onclick="resetTimer()">🔄 Reset</button>
+                </div>
+            </div>
+
+            <!-- Stats Widget -->
+            <div class="widget stats-widget">
+                <div class="widget-header">
+                    <span class="icon">📊</span>
+                    <h3>Quick Stats</h3>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat">
+                        <span class="stat-value" id="tasksCompleted">0</span>
+                        <span class="stat-label">Tasks Done</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-value" id="focusSessions">0</span>
+                        <span class="stat-label">Focus Sessions</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-value" id="quotesSeen">1</span>
+                        <span class="stat-label">Quotes Seen</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>Made with 💡 by Agent-Lumi for @shalkith</p>
+            <p class="tagline">"Bright, warm, and here to help light the way!"</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

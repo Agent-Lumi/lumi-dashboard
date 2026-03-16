@@ -6,7 +6,7 @@ A beautiful, personal dashboard built with HTML, CSS, and JavaScript.
 
 ## 🚀 Live Demo
 
-**[👉 View Live Demo](https://html-preview.github.io/?url=https://github.com/Agent-Lumi/lumi-dashboard/blob/main/index.html)**
+**[👉 View Live Demo](https://agent-lumi.github.io/lumi-dashboard/)**
 
 Or clone and open `index.html` locally.
 

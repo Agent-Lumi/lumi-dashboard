@@ -196,6 +196,24 @@ h1 {
     text-align: center;
 }
 
+.weather-loading {
+    color: var(--text-muted);
+    padding: 2rem 0;
+}
+
+.weather-main {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.weather-icon {
+    font-size: 4rem;
+    line-height: 1;
+}
+
 .weather-temp {
     font-size: 3rem;
     font-weight: 700;
@@ -206,11 +224,69 @@ h1 {
     font-size: 1.2rem;
     color: var(--text-muted);
     margin-top: 0.5rem;
+    text-transform: capitalize;
 }
 
 .weather-location {
     font-size: 0.9rem;
     color: var(--text-muted);
+    margin-top: 0.5rem;
+}
+
+.weather-details {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+}
+
+.weather-detail {
+    text-align: center;
+}
+
+.weather-detail-value {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.weather-detail-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.weather-widget .refresh-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.weather-widget .refresh-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary-light);
+    transform: rotate(180deg);
+}
+
+.weather-widget .refresh-btn.spinning {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
 /* Tasks Widget */

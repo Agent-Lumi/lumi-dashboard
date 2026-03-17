@@ -166,30 +166,179 @@ function updateDate() {
 }
 
 // Weather Function (using wttr.in as a free API)
+let currentLocation = localStorage.getItem('lumiWeatherLocation') || 'Phoenix, AZ';
+let isWeatherLoading = false;
+
+// Weather icon mapping based on wttr.in codes
+function getWeatherIcon(code) {
+    const iconMap = {
+        '113': '☀️', // Clear/Sunny
+        '116': '🌤️', // Partly cloudy
+        '119': '☁️', // Cloudy
+        '122': '☁️', // Overcast
+        '143': '🌫️', // Mist
+        '176': '🌦️', // Patchy rain possible
+        '179': '🌨️', // Patchy snow possible
+        '182': '🌨️', // Patchy sleet possible
+        '185': '🌨️', // Patchy freezing drizzle possible
+        '200': '⛈️', // Thundery outbreaks possible
+        '227': '🌨️', // Blowing snow
+        '230': '❄️', // Blizzard
+        '248': '🌫️', // Fog
+        '260': '🌫️', // Freezing fog
+        '263': '🌦️', // Patchy light drizzle
+        '266': '🌧️', // Light drizzle
+        '281': '🌧️', // Freezing drizzle
+        '284': '🌧️', // Heavy freezing drizzle
+        '293': '🌦️', // Patchy light rain
+        '296': '🌧️', // Light rain
+        '299': '🌧️', // Moderate rain at times
+        '302': '🌧️', // Moderate rain
+        '305': '🌧️', // Heavy rain at times
+        '308': '🌧️', // Heavy rain
+        '311': '🌧️', // Light freezing rain
+        '314': '🌧️', // Moderate or heavy freezing rain
+        '317': '🌨️', // Light sleet
+        '320': '🌨️', // Moderate or heavy sleet
+        '323': '🌨️', // Patchy light snow
+        '326': '🌨️', // Light snow
+        '329': '❄️', // Patchy moderate snow
+        '332': '❄️', // Moderate snow
+        '335': '❄️', // Patchy heavy snow
+        '338': '❄️', // Heavy snow
+        '350': '🌨️', // Ice pellets
+        '353': '🌦️', // Light rain shower
+        '356': '🌧️', // Moderate or heavy rain shower
+        '359': '🌧️', // Torrential rain shower
+        '362': '🌨️', // Light sleet showers
+        '365': '🌨️', // Moderate or heavy sleet showers
+        '368': '🌨️', // Light snow showers
+        '371': '❄️', // Moderate or heavy snow showers
+        '374': '🌨️', // Light showers of ice pellets
+        '377': '🌨️', // Moderate or heavy showers of ice pellets
+        '386': '⛈️', // Patchy light rain with thunder
+        '389': '⛈️', // Moderate or heavy rain with thunder
+        '392': '⛈️', // Patchy light snow with thunder
+        '395': '⛈️', // Moderate or heavy snow with thunder
+    };
+    return iconMap[code] || '🌡️';
+}
+
 async function fetchWeather() {
     const weatherEl = document.getElementById('weather');
+    const refreshBtn = document.querySelector('.weather-widget .refresh-btn');
+    
+    if (isWeatherLoading) return;
+    isWeatherLoading = true;
+    
+    if (refreshBtn) {
+        refreshBtn.classList.add('spinning');
+    }
     
     try {
-        // Get weather for Phoenix, Arizona (Fahrenheit)
-        const response = await fetch('https://wttr.in/Phoenix?format=j1');
+        // Try to get user's location first
+        let location = currentLocation;
+        let locationDisplay = location;
+        
+        // If no saved location, try geolocation
+        if (!localStorage.getItem('lumiWeatherLocation') && navigator.geolocation) {
+            try {
+                const position = await new Promise((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(resolve, reject, {
+                        timeout: 5000,
+                        enableHighAccuracy: false
+                    });
+                });
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                location = `${lat},${lon}`;
+                locationDisplay = '📍 Current Location';
+            } catch (geoError) {
+                console.log('Geolocation failed, using default:', geoError);
+                location = 'Phoenix, AZ';
+                locationDisplay = '📍 Phoenix, AZ';
+            }
+        } else {
+            locationDisplay = `📍 ${location}`;
+        }
+        
+        // Fetch weather from wttr.in
+        const response = await fetch(`https://wttr.in/${encodeURIComponent(location)}?format=j1`);
         const data = await response.json();
         
         const current = data.current_condition[0];
-        const temp = current.temp_F;  // Changed to Fahrenheit
+        const temp = current.temp_F;
         const desc = current.weatherDesc[0].value;
+        const humidity = current.humidity;
+        const windSpeed = current.windspeedMiles;
+        const feelsLike = current.FeelsLikeF;
+        const weatherCode = current.weatherCode;
+        
+        // Get weather icon
+        const icon = getWeatherIcon(weatherCode);
+        
+        // Save location for future use
+        if (location !== `${data.nearest_area[0].latitude},${data.nearest_area[0].longitude}`) {
+            currentLocation = data.nearest_area[0].areaName[0].value + ', ' + data.nearest_area[0].region[0].value;
+            localStorage.setItem('lumiWeatherLocation', currentLocation);
+        }
         
         weatherEl.innerHTML = `
-            <div class="weather-temp">${temp}°F</div>
+            <div class="weather-main">
+                <div class="weather-icon">${icon}</div>
+                <div class="weather-temp">${temp}°F</div>
+            </div>
             <div class="weather-desc">${desc}</div>
-            <div class="weather-location">📍 Phoenix, AZ</div>
+            <div class="weather-location">${locationDisplay}</div>
+            <div class="weather-details">
+                <div class="weather-detail">
+                    <div class="weather-detail-value">${feelsLike}°F</div>
+                    <div class="weather-detail-label">Feels Like</div>
+                </div>
+                <div class="weather-detail">
+                    <div class="weather-detail-value">${humidity}%</div>
+                    <div class="weather-detail-label">Humidity</div>
+                </div>
+                <div class="weather-detail">
+                    <div class="weather-detail-value">${windSpeed} mph</div>
+                    <div class="weather-detail-label">Wind</div>
+                </div>
+            </div>
         `;
     } catch (error) {
+        console.error('Weather fetch error:', error);
         weatherEl.innerHTML = `
-            <div class="weather-temp">🌤️</div>
-            <div class="weather-desc">Weather data unavailable</div>
-            <div class="weather-location">Check your internet connection</div>
+            <div class="weather-main">
+                <div class="weather-icon">🌡️</div>
+                <div class="weather-temp">--°F</div>
+            </div>
+            <div class="weather-desc">Unable to load weather</div>
+            <div class="weather-location">📍 ${currentLocation}</div>
+            <div class="weather-details">
+                <div class="weather-detail">
+                    <div class="weather-detail-value">--</div>
+                    <div class="weather-detail-label">Feels Like</div>
+                </div>
+                <div class="weather-detail">
+                    <div class="weather-detail-value">--</div>
+                    <div class="weather-detail-label">Humidity</div>
+                </div>
+                <div class="weather-detail">
+                    <div class="weather-detail-value">--</div>
+                    <div class="weather-detail-label">Wind</div>
+                </div>
+            </div>
         `;
+    } finally {
+        isWeatherLoading = false;
+        if (refreshBtn) {
+            refreshBtn.classList.remove('spinning');
+        }
     }
+}
+
+function refreshWeather() {
+    fetchWeather();
 }
 
 // Quote Functions

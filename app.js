@@ -30,6 +30,11 @@ let focusSessions = 0;
 let tasks = []; // Store tasks in memory
 let notes = []; // Store notes in memory
 
+// PWA State
+let deferredPrompt = null;
+let isPWAInstalled = false;
+let isOffline = false;
+
 // Initialize Dashboard
 document.addEventListener('DOMContentLoaded', () => {
     loadTheme(); // Load saved theme first
@@ -43,6 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadTasks(); // Load saved tasks
     loadNotes(); // Load saved notes
     setupNotesListeners();
+    initPWA(); // Initialize PWA features
 });
 
 // Theme Toggle Functions
@@ -689,6 +695,154 @@ window.startTimer = function() {
 console.log('%c💡 Lumi Dashboard', 'font-size: 24px; font-weight: bold; color: #6f42c1;');
 console.log('%cMade with love by Agent-Lumi for @shalkith', 'font-size: 14px; color: #8b5cf6;');
 console.log('%c"Bright, warm, and here to help light the way!"', 'font-style: italic; color: #a1a1aa;');
+console.log('%c📱 PWA Enabled - Install for offline access!', 'font-size: 12px; color: #22c55e;');
+
+// PWA Functions
+function initPWA() {
+    // Check if already installed
+    if (window.matchMedia('(display-mode: standalone)').matches || 
+        window.navigator.standalone === true) {
+        isPWAInstalled = true;
+        console.log('[PWA] App already installed');
+    }
+
+    // Register service worker
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js')
+            .then((registration) => {
+                console.log('[PWA] Service Worker registered:', registration.scope);
+                
+                // Check for updates
+                registration.addEventListener('updatefound', () => {
+                    const newWorker = registration.installing;
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            showNotification('Update available! Refresh to update.', 'success');
+                        }
+                    });
+                });
+            })
+            .catch((err) => {
+                console.error('[PWA] Service Worker registration failed:', err);
+            });
+    }
+
+    // Listen for beforeinstallprompt
+    window.addEventListener('beforeinstallprompt', (e) => {
+        // Prevent the mini-infobar from appearing on mobile
+        e.preventDefault();
+        // Store the event for later use
+        deferredPrompt = e;
+        // Show the install widget
+        showInstallWidget();
+        console.log('[PWA] Install prompt available');
+    });
+
+    // Listen for app installed
+    window.addEventListener('appinstalled', () => {
+        isPWAInstalled = true;
+        deferredPrompt = null;
+        hideInstallWidget();
+        showNotification('App installed successfully! 🎉', 'success');
+        console.log('[PWA] App installed');
+    });
+
+    // Online/offline detection
+    window.addEventListener('online', () => {
+        isOffline = false;
+        updateOfflineIndicator();
+        showNotification('Back online! 🌐', 'success');
+    });
+
+    window.addEventListener('offline', () => {
+        isOffline = true;
+        updateOfflineIndicator();
+        showNotification('You\'re offline. App still works! 📱', 'info');
+    });
+
+    // Initial offline check
+    isOffline = !navigator.onLine;
+    updateOfflineIndicator();
+}
+
+function showInstallWidget() {
+    if (isPWAInstalled || localStorage.getItem('pwaDismissed') === 'true') {
+        return;
+    }
+    const widget = document.getElementById('pwaWidget');
+    if (widget) {
+        widget.style.display = 'block';
+        // Add animation
+        widget.style.animation = 'slideIn 0.5s ease-out';
+    }
+}
+
+function hideInstallWidget() {
+    const widget = document.getElementById('pwaWidget');
+    if (widget) {
+        widget.style.animation = 'slideOut 0.3s ease-in';
+        setTimeout(() => {
+            widget.style.display = 'none';
+        }, 300);
+    }
+}
+
+async function installPWA() {
+    if (!deferredPrompt) {
+        showNotification('App already installed or not available', 'info');
+        return;
+    }
+
+    // Show the install prompt
+    deferredPrompt.prompt();
+    
+    // Wait for user response
+    const { outcome } = await deferredPrompt.userChoice;
+    
+    if (outcome === 'accepted') {
+        console.log('[PWA] User accepted install');
+        isPWAInstalled = true;
+    } else {
+        console.log('[PWA] User dismissed install');
+    }
+    
+    // Clear the deferred prompt
+    deferredPrompt = null;
+}
+
+function dismissPWA() {
+    hideInstallWidget();
+    localStorage.setItem('pwaDismissed', 'true');
+    console.log('[PWA] Install widget dismissed');
+}
+
+function updateOfflineIndicator() {
+    const indicator = document.getElementById('offlineIndicator');
+    if (indicator) {
+        if (isOffline) {
+            indicator.style.display = 'flex';
+            indicator.classList.add('show');
+        } else {
+            indicator.classList.remove('show');
+            setTimeout(() => {
+                indicator.style.display = 'none';
+            }, 300);
+        }
+    }
+}
+
+// Register keyboard shortcut for PWA refresh (Ctrl+Shift+R)
+document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'R') {
+        e.preventDefault();
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.ready.then((registration) => {
+                registration.update();
+                showNotification('Checking for updates... 🔄', 'info');
+            });
+        }
+    }
+});
 
 // Notes Widget Functions
 function setupNotesListeners() {

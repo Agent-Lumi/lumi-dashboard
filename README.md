@@ -12,6 +12,15 @@ Or clone and open `index.html` locally.
 
 ## Features
 
+### 📱 PWA Support (NEW!)
+- **Install as a native app** on mobile/desktop
+- **Works offline** - all features available without internet
+- **Automatic updates** - service worker keeps app fresh
+- **Home screen icon** - quick access like any native app
+- **Offline indicator** - shows when you're offline
+- **Background sync** ready for future enhancements
+- **Ctrl+Shift+R** - Check for updates manually
+
 ### 📝 Quick Notes Widget
 - Add quick text notes on the fly
 - **💾 Auto-saves to LocalStorage**
@@ -30,6 +39,7 @@ Or clone and open `index.html` locally.
 - **Fahrenheit** temperature display
 - Phoenix, Arizona location
 - Manual refresh button
+- **Offline fallback** - cached weather data
 
 ### ✅ Task Manager
 - Add and complete tasks
@@ -69,6 +79,7 @@ Or clone and open `index.html` locally.
 | `Ctrl/Cmd + R` | Refresh quote |
 | `Ctrl/Cmd + W` | Refresh weather |
 | `Ctrl/Cmd + D` | Toggle theme |
+| `Ctrl/Cmd + Shift + R` | Check for PWA updates |
 | `Escape` | Pause timer & blur input |
 
 ### 🔔 Notifications
@@ -80,11 +91,32 @@ Or clone and open `index.html` locally.
 
 Open `index.html` in any modern browser to see the dashboard in action!
 
+## Installation (PWA)
+
+### Desktop (Chrome/Edge)
+1. Visit the [live demo](https://agent-lumi.github.io/lumi-dashboard/)
+2. Click the install icon (➕) in the address bar
+3. Or click the "Install App" button in the dashboard
+
+### Mobile (iOS Safari)
+1. Open the dashboard in Safari
+2. Tap the Share button
+3. Tap "Add to Home Screen"
+
+### Mobile (Android Chrome)
+1. Open the dashboard in Chrome
+2. Tap the menu (⋮)
+3. Tap "Add to Home Screen"
+
+Once installed, the app works **completely offline**!
+
 ## Tech Stack
 
 - **HTML5** - Semantic structure
 - **CSS3** - Modern styling with CSS Grid & Flexbox
 - **JavaScript** - Interactive features (no frameworks!)
+- **Service Worker** - PWA offline support
+- **Web App Manifest** - Installable app configuration
 - **Inter Font** - Clean, modern typography
 
 ## Design
@@ -128,10 +160,18 @@ const response = await fetch('https://wttr.in/YourCity?format=j1');
 
 ## Browser Support
 
-- Chrome/Edge (latest)
-- Firefox (latest)
-- Safari (latest)
-- Mobile browsers
+- Chrome/Edge (latest) - Full PWA support
+- Firefox (latest) - PWA support (desktop)
+- Safari (latest) - Add to Home Screen support
+- Mobile browsers - Full PWA support
+
+## PWA Features
+
+- **Service Worker**: Caches assets for offline use
+- **Web App Manifest**: Configures app appearance
+- **Offline Fallback**: Shows cached data when offline
+- **Background Sync**: Ready for future enhancements
+- **Push Notifications**: Framework ready
 
 ## Credits
 

@@ -6,6 +6,12 @@
     <title>Lumi Dashboard ✨</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#6f42c1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Lumi Dashboard">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect fill='%236f42c1' width='192' height='192' rx='24'/%3E%3Ctext x='96' y='130' font-size='120' text-anchor='middle'%3E%F0%9F%92%A1%3C/text%3E%3C/svg%3E">
 </head>
 <body>
     <div class="container">
@@ -138,9 +144,29 @@
             </div>
         </main>
 
+        <!-- PWA Install Widget -->
+            <div class="widget pwa-widget" id="pwaWidget" style="display: none;">
+                <div class="widget-header">
+                    <span class="icon">📱</span>
+                    <h3>Install App</h3>
+                </div>
+                <div class="pwa-content">
+                    <p>Install Lumi Dashboard for quick access from your home screen!</p>
+                    <button class="install-btn" id="installBtn" onclick="installPWA()">
+                        📲 Install
+                    </button>
+                    <button class="dismiss-btn" onclick="dismissPWA()">
+                        ✕ Dismiss
+                    </button>
+                </div>
+            </div>
+
         <footer>
             <p>Made with 💡 by Agent-Lumi for @shalkith</p>
             <p class="tagline">"Bright, warm, and here to help light the way!"</p>
+            <div class="offline-indicator" id="offlineIndicator">
+                <span class="offline-dot"></span> Offline Mode
+            </div>
         </footer>
     </div>
 

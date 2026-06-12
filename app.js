@@ -476,6 +476,11 @@ function updateStats() {
     document.getElementById('quotesSeen').textContent = quotesSeen;
 }
 
+function refreshStats() {
+    updateStats();
+    showNotification('Stats refreshed! 📊', 'success');
+}
+
 // Keyboard Shortcuts
 document.addEventListener('keydown', (e) => {
     // Space to start/pause timer when focus widget is visible
@@ -487,7 +492,186 @@ document.addEventListener('keydown', (e) => {
             startTimer();
         }
     }
+    
+    // Ctrl/Cmd + T - Focus task input
+    if ((e.ctrlKey || e.metaKey) && e.key === 't') {
+        e.preventDefault();
+        document.getElementById('newTask')?.focus();
+    }
+    
+    // Ctrl/Cmd + R - Refresh quote
+    if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
+        e.preventDefault();
+        refreshQuote();
+    }
+    
+    // Ctrl/Cmd + W - Refresh weather
+    if ((e.ctrlKey || e.metaKey) && e.key === 'w') {
+        e.preventDefault();
+        refreshWeather();
+    }
+    
+    // Ctrl/Cmd + D - Toggle theme
+    if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
+        e.preventDefault();
+        toggleTheme();
+    }
+    
+    // Escape - Pause timer
+    if (e.key === 'Escape') {
+        pauseTimer();
+        document.getElementById('newTask')?.blur();
+    }
 });
+
+// Export/Import Functions
+function exportData() {
+    const data = {
+        tasks: tasks,
+        quotesSeen: quotesSeen,
+        tasksCompleted: tasksCompleted,
+        focusSessions: focusSessions,
+        exportDate: new Date().toISOString(),
+        version: '1.0'
+    };
+    
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `lumi-dashboard-backup-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    showNotification('Data exported successfully! 💾', 'success');
+}
+
+function importData() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                const data = JSON.parse(event.target.result);
+                
+                if (data.tasks) {
+                    tasks = data.tasks;
+                    loadTasks();
+                }
+                if (data.quotesSeen) quotesSeen = data.quotesSeen;
+                if (data.tasksCompleted) tasksCompleted = data.tasksCompleted;
+                if (data.focusSessions) focusSessions = data.focusSessions;
+                
+                updateStats();
+                saveData();
+                showNotification('Data imported successfully! 📥', 'success');
+            } catch (err) {
+                showNotification('Failed to import data. Invalid file format.', 'error');
+            }
+        };
+        reader.readAsText(file);
+    };
+    input.click();
+}
+
+function resetData() {
+    if (confirm('Are you sure you want to reset all data? This cannot be undone.')) {
+        tasks = [];
+        quotesSeen = 1;
+        tasksCompleted = 0;
+        focusSessions = 0;
+        localStorage.removeItem('lumiDashboardData');
+        localStorage.removeItem('lumiWeatherLocation');
+        localStorage.removeItem('lumiTheme');
+        
+        document.getElementById('taskList').innerHTML = `
+            <li class="task-item">
+                <input type="checkbox" id="task1">
+                <label for="task1">Check out my new dashboard!</label>
+            </li>
+            <li class="task-item">
+                <input type="checkbox" id="task2">
+                <label for="task2">Built by Agent-Lumi 💡</label>
+            </li>
+        `;
+        setupTaskListeners();
+        updateStats();
+        
+        showNotification('Data reset successfully! 🔄', 'success');
+    }
+}
+
+// Notification System
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.textContent = message;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 12px 20px;
+        border-radius: 8px;
+        font-weight: 500;
+        z-index: 10000;
+        animation: slideIn 0.3s ease-out;
+        max-width: 300px;
+        word-wrap: break-word;
+    `;
+    
+    if (type === 'success') {
+        notification.style.background = '#10b981';
+        notification.style.color = 'white';
+    } else if (type === 'error') {
+        notification.style.background = '#ef4444';
+        notification.style.color = 'white';
+    } else {
+        notification.style.background = '#6f42c1';
+        notification.style.color = 'white';
+    }
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease-in';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
+// Sound notification for timer (optional)
+function playTimerSound() {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.frequency.value = 800;
+    oscillator.type = 'sine';
+    
+    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.5);
+}
+
+// Override startTimer to add sound
+const originalStartTimer = startTimer;
+window.startTimer = function() {
+    if (!isTimerRunning) {
+        playTimerSound();
+        originalStartTimer();
+    }
+};
 
 // Console Easter Egg
 console.log('%c💡 Lumi Dashboard', 'font-size: 24px; font-weight: bold; color: #6f42c1;');

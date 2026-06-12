@@ -94,6 +94,7 @@
                 <div class="widget-header">
                     <span class="icon">📊</span>
                     <h3>Quick Stats</h3>
+                    <button class="refresh-btn" onclick="refreshStats()" title="Refresh stats">🔄</button>
                 </div>
                 <div class="stats-grid">
                     <div class="stat">
@@ -108,6 +109,11 @@
                         <span class="stat-value" id="quotesSeen">1</span>
                         <span class="stat-label">Quotes Seen</span>
                     </div>
+                </div>
+                <div class="data-actions">
+                    <button onclick="exportData()" title="Export all data (Ctrl+E)">💾 Export</button>
+                    <button onclick="importData()" title="Import data">📥 Import</button>
+                    <button onclick="resetData()" title="Reset all data" class="danger">🗑️ Reset</button>
                 </div>
             </div>
         </main>

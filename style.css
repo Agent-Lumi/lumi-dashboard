@@ -454,6 +454,7 @@ h1 {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 1rem;
+    margin-bottom: 1rem;
 }
 
 .stat {
@@ -475,6 +476,87 @@ h1 {
     font-size: 0.85rem;
     color: var(--text-muted);
     margin-top: 0.25rem;
+}
+
+.data-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+}
+
+.data-actions button {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.85rem;
+}
+
+.data-actions button:hover {
+    border-color: var(--primary);
+    color: var(--primary-light);
+}
+
+.data-actions button.danger:hover {
+    border-color: var(--error);
+    color: var(--error);
+}
+
+/* Notifications */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(100px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideOut {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(100px);
+    }
+}
+
+/* Focus visible styles for accessibility */
+*:focus-visible {
+    outline: 2px solid var(--primary-light);
+    outline-offset: 2px;
+}
+
+/* Stats Widget refresh button */
+.stats-widget .refresh-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stats-widget .refresh-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary-light);
 }
 
 /* Footer */
@@ -511,5 +593,21 @@ footer {
     
     .stats-grid {
         grid-template-columns: 1fr;
+    }
+    
+    .data-actions {
+        flex-direction: column;
+    }
+    
+    .data-actions button {
+        width: 100%;
+    }
+    
+    .timer-controls {
+        flex-direction: column;
+    }
+    
+    .timer-controls button {
+        width: 100%;
     }
 }

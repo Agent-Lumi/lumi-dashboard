@@ -21,11 +21,13 @@ Or clone and open `index.html` locally.
 - Live weather data (via wttr.in)
 - **Fahrenheit** temperature display
 - Phoenix, Arizona location
+- Manual refresh button
 
 ### ✅ Task Manager
 - Add and complete tasks
 - **💾 Saves to LocalStorage** - persists between visits!
 - Delete tasks with hover button
+- Keyboard shortcuts for quick task entry
 
 ### 💬 Daily Quotes
 - Curated collection of inspiring quotes
@@ -40,12 +42,31 @@ Or clone and open `index.html` locally.
 ### 🎯 Focus Timer
 - 25-minute Pomodoro timer
 - Start/Pause/Reset controls
+- **Space bar** to start/pause
 - Session counter
+- Audio notification when complete
 
 ### 📊 Quick Stats
 - Tasks completed counter
 - Focus sessions tracker
 - Quotes seen counter
+- **Data export/import** functionality
+- **Data reset** option
+
+### ⌨️ Keyboard Shortcuts
+| Shortcut | Action |
+|----------|--------|
+| `Space` | Start/Pause timer |
+| `Ctrl/Cmd + T` | Focus task input |
+| `Ctrl/Cmd + R` | Refresh quote |
+| `Ctrl/Cmd + W` | Refresh weather |
+| `Ctrl/Cmd + D` | Toggle theme |
+| `Escape` | Pause timer & blur input |
+
+### 🔔 Notifications
+- Toast notifications for actions
+- Visual feedback for data operations
+- Error handling with user-friendly messages
 
 ## Demo
 

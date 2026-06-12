@@ -28,6 +28,7 @@ let quotesSeen = 1;
 let tasksCompleted = 0;
 let focusSessions = 0;
 let tasks = []; // Store tasks in memory
+let notes = []; // Store notes in memory
 
 // Initialize Dashboard
 document.addEventListener('DOMContentLoaded', () => {
@@ -40,6 +41,8 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchWeather();
     setupTaskListeners();
     loadTasks(); // Load saved tasks
+    loadNotes(); // Load saved notes
+    setupNotesListeners();
 });
 
 // Theme Toggle Functions
@@ -71,7 +74,8 @@ function saveData() {
         quotesSeen: quotesSeen,
         tasksCompleted: tasksCompleted,
         focusSessions: focusSessions,
-        tasks: tasks
+        tasks: tasks,
+        notes: notes
     };
     localStorage.setItem('lumiDashboardData', JSON.stringify(data));
 }
@@ -85,6 +89,7 @@ function loadData() {
             tasksCompleted = data.tasksCompleted || 0;
             focusSessions = data.focusSessions || 0;
             tasks = data.tasks || [];
+            notes = data.notes || [];
             updateStats();
         } catch (e) {
             console.log('Error loading saved data:', e);
@@ -528,11 +533,12 @@ document.addEventListener('keydown', (e) => {
 function exportData() {
     const data = {
         tasks: tasks,
+        notes: notes,
         quotesSeen: quotesSeen,
         tasksCompleted: tasksCompleted,
         focusSessions: focusSessions,
         exportDate: new Date().toISOString(),
-        version: '1.0'
+        version: '1.1'
     };
     
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -565,6 +571,10 @@ function importData() {
                     tasks = data.tasks;
                     loadTasks();
                 }
+                if (data.notes) {
+                    notes = data.notes;
+                    loadNotes();
+                }
                 if (data.quotesSeen) quotesSeen = data.quotesSeen;
                 if (data.tasksCompleted) tasksCompleted = data.tasksCompleted;
                 if (data.focusSessions) focusSessions = data.focusSessions;
@@ -584,6 +594,7 @@ function importData() {
 function resetData() {
     if (confirm('Are you sure you want to reset all data? This cannot be undone.')) {
         tasks = [];
+        notes = [];
         quotesSeen = 1;
         tasksCompleted = 0;
         focusSessions = 0;
@@ -602,7 +613,8 @@ function resetData() {
             </li>
         `;
         setupTaskListeners();
-        updateStats();
+        loadNotes();
+        updateStats();;
         
         showNotification('Data reset successfully! 🔄', 'success');
     }
@@ -677,3 +689,119 @@ window.startTimer = function() {
 console.log('%c💡 Lumi Dashboard', 'font-size: 24px; font-weight: bold; color: #6f42c1;');
 console.log('%cMade with love by Agent-Lumi for @shalkith', 'font-size: 14px; color: #8b5cf6;');
 console.log('%c"Bright, warm, and here to help light the way!"', 'font-style: italic; color: #a1a1aa;');
+
+// Notes Widget Functions
+function setupNotesListeners() {
+    const noteInput = document.getElementById('noteInput');
+    if (noteInput) {
+        noteInput.addEventListener('keydown', handleNoteKeypress);
+    }
+}
+
+function handleNoteKeypress(e) {
+    // Enter to save (Shift+Enter for new line)
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        addNote();
+    }
+}
+
+function loadNotes() {
+    const notesList = document.getElementById('notesList');
+    if (!notesList) return;
+    
+    if (notes.length === 0) {
+        notesList.innerHTML = `
+            <li class="notes-empty">
+                <div class="notes-empty-icon">📝</div>
+                <div>No notes yet</div>
+                <div style="font-size: 0.85rem; margin-top: 0.25rem;">Add your first note above!</div>
+            </li>
+        `;
+        return;
+    }
+    
+    notesList.innerHTML = '';
+    
+    // Display notes in reverse order (newest first)
+    [...notes].reverse().forEach(note => {
+        const li = createNoteElement(note);
+        notesList.appendChild(li);
+    });
+}
+
+function createNoteElement(note) {
+    const li = document.createElement('li');
+    li.className = 'note-item';
+    li.dataset.noteId = note.id;
+    
+    const timestamp = new Date(note.timestamp).toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit'
+    });
+    
+    li.innerHTML = `
+        <div class="note-content">
+            <div>${escapeHtml(note.text)}</div>
+            <div class="note-timestamp">${timestamp}</div>
+        </div>
+        <button class="delete-note" onclick="deleteNote('${note.id}')" title="Delete note">×</button>
+    `;
+    
+    return li;
+}
+
+function addNote() {
+    const noteInput = document.getElementById('noteInput');
+    const noteText = noteInput.value.trim();
+    
+    if (!noteText) {
+        showNotification('Please enter a note first! 📝', 'error');
+        return;
+    }
+    
+    const newNote = {
+        id: `note_${Date.now()}`,
+        text: noteText,
+        timestamp: Date.now()
+    };
+    
+    notes.push(newNote);
+    saveData();
+    
+    // Clear input
+    noteInput.value = '';
+    
+    // Refresh notes list
+    loadNotes();
+    
+    showNotification('Note added! ✅', 'success');
+}
+
+function deleteNote(noteId) {
+    const noteEl = document.querySelector(`[data-note-id="${noteId}"]`);
+    if (noteEl) {
+        noteEl.style.animation = 'slideOut 0.3s ease-in';
+        setTimeout(() => {
+            notes = notes.filter(n => n.id !== noteId);
+            saveData();
+            loadNotes();
+        }, 300);
+    }
+}
+
+function clearNotes() {
+    if (notes.length === 0) {
+        showNotification('No notes to clear! 📝', 'info');
+        return;
+    }
+    
+    if (confirm(`Are you sure you want to delete all ${notes.length} note(s)? This cannot be undone.`)) {
+        notes = [];
+        saveData();
+        loadNotes();
+        showNotification('All notes cleared! 🗑️', 'success');
+    }
+}

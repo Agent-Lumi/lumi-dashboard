@@ -116,6 +116,26 @@
                     <button onclick="resetData()" title="Reset all data" class="danger">🗑️ Reset</button>
                 </div>
             </div>
+
+            <!-- Notes Widget -->
+            <div class="widget notes-widget">
+                <div class="widget-header">
+                    <span class="icon">📝</span>
+                    <h3>Quick Notes</h3>
+                    <div class="notes-actions">
+                        <button class="icon-btn" onclick="clearNotes()" title="Clear all notes">🗑️</button>
+                    </div>
+                </div>
+                <div class="notes-container">
+                    <div class="note-input-area">
+                        <textarea id="noteInput" placeholder="Type a quick note... (Enter to save, Shift+Enter for new line)" rows="2"></textarea>
+                        <button onclick="addNote()" class="add-note-btn">➕ Add</button>
+                    </div>
+                    <ul class="notes-list" id="notesList">
+                        <!-- Notes will be populated here -->
+                    </ul>
+                </div>
+            </div>
         </main>
 
         <footer>

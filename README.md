@@ -12,6 +12,14 @@ Or clone and open `index.html` locally.
 
 ## Features
 
+### 📝 Quick Notes Widget
+- Add quick text notes on the fly
+- **💾 Auto-saves to LocalStorage**
+- Timestamps on each note
+- Delete individual notes or clear all
+- Enter to save, Shift+Enter for new line
+- Beautiful purple accent styling
+
 ### 🕐 Live Clock
 - Real-time **Arizona time** (MST/MDT)
 - Current date display

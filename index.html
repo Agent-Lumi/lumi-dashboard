@@ -86,12 +86,17 @@
                 <div class="widget-header">
                     <span class="icon">🎯</span>
                     <h3>Focus Timer</h3>
+                    <button class="refresh-btn" onclick="resetTimer()" title="Reset timer">🔄</button>
+                </div>
+                <div class="timer-mode-selector">
+                    <button class="timer-mode-btn active" id="pomodoroModeBtn" onclick="setTimerMode('pomodoro')">Pomodoro</button>
+                    <button class="timer-mode-btn" id="shortBreakModeBtn" onclick="setTimerMode('shortBreak')">Short Break</button>
+                    <button class="timer-mode-btn" id="longBreakModeBtn" onclick="setTimerMode('longBreak')">Long Break</button>
                 </div>
                 <div class="timer-display" id="timer">25:00</div>
                 <div class="timer-controls">
                     <button onclick="startTimer()">▶️ Start</button>
                     <button onclick="pauseTimer()">⏸️ Pause</button>
-                    <button onclick="resetTimer()">🔄 Reset</button>
                 </div>
             </div>
 
@@ -140,6 +145,72 @@
                     <ul class="notes-list" id="notesList">
                         <!-- Notes will be populated here -->
                     </ul>
+                </div>
+            </div>
+
+            <!-- Calculator Widget -->
+            <div class="widget calculator-widget">
+                <div class="widget-header">
+                    <span class="icon">🧮</span>
+                    <h3>Calculator</h3>
+                    <button class="refresh-btn" onclick="clearCalculator()" title="Clear">🗑️</button>
+                </div>
+                <div class="calculator-display" id="calcDisplay">0</div>
+                <div class="calculator-grid">
+                    <button onclick="calcInput('7')">7</button>
+                    <button onclick="calcInput('8')">8</button>
+                    <button onclick="calcInput('9')">9</button>
+                    <button onclick="calcOperator('/')" class="operator">÷</button>
+                    <button onclick="calcInput('4')">4</button>
+                    <button onclick="calcInput('5')">5</button>
+                    <button onclick="calcInput('6')">6</button>
+                    <button onclick="calcOperator('*')" class="operator">×</button>
+                    <button onclick="calcInput('1')">1</button>
+                    <button onclick="calcInput('2')">2</button>
+                    <button onclick="calcInput('3')">3</button>
+                    <button onclick="calcOperator('-')" class="operator">−</button>
+                    <button onclick="calcInput('0')">0</button>
+                    <button onclick="calcInput('.')">.</button>
+                    <button onclick="calcEquals()" class="equals">=</button>
+                    <button onclick="calcOperator('+')" class="operator">+</button>
+                </div>
+            </div>
+
+            <!-- Keyboard Shortcuts Widget -->
+            <div class="widget shortcuts-widget">
+                <div class="widget-header">
+                    <span class="icon">⌨️</span>
+                    <h3>Keyboard Shortcuts</h3>
+                </div>
+                <div class="shortcuts-list">
+                    <div class="shortcut-item">
+                        <kbd>Space</kbd>
+                        <span>Start/Pause timer</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Ctrl</kbd> + <kbd>T</kbd>
+                        <span>Focus task input</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Ctrl</kbd> + <kbd>R</kbd>
+                        <span>New quote</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Ctrl</kbd> + <kbd>W</kbd>
+                        <span>Refresh weather</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Ctrl</kbd> + <kbd>D</kbd>
+                        <span>Toggle theme</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Ctrl</kbd> + <kbd>E</kbd>
+                        <span>Export data</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Esc</kbd>
+                        <span>Pause timer / blur input</span>
+                    </div>
                 </div>
             </div>
         </main>

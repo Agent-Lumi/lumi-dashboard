@@ -831,7 +831,144 @@ function updateOfflineIndicator() {
     }
 }
 
-// Register keyboard shortcut for PWA refresh (Ctrl+Shift+R)
+// Timer Mode Function
+let timerMode = 'pomodoro';
+const timerPresets = {
+    pomodoro: 25 * 60,
+    shortBreak: 5 * 60,
+    longBreak: 15 * 60
+};
+
+function setTimerMode(mode) {
+    timerMode = mode;
+    timeLeft = timerPresets[mode];
+    updateTimerDisplay();
+    
+    // Update active button
+    document.querySelectorAll('.timer-mode-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.getElementById(`${mode}ModeBtn`)?.classList.add('active');
+    
+    // Update timer color based on mode
+    const timerDisplay = document.getElementById('timer');
+    if (timerDisplay) {
+        timerDisplay.className = 'timer-display ' + mode;
+    }
+}
+
+// Calculator Functions
+let calcCurrent = '';
+let calcPrevious = '';
+let calcOperation = null;
+let calcResetNext = false;
+
+function calcInput(number) {
+    if (calcResetNext) {
+        calcCurrent = '';
+        calcResetNext = false;
+    }
+    
+    // Prevent multiple decimals
+    if (number === '.' && calcCurrent.includes('.')) return;
+    
+    calcCurrent += number;
+    updateCalcDisplay();
+}
+
+function calcOperator(op) {
+    if (calcCurrent === '') return;
+    if (calcPrevious !== '') {
+        calcEquals();
+    }
+    calcOperation = op;
+    calcPrevious = calcCurrent;
+    calcCurrent = '';
+}
+
+function calcEquals() {
+    let computation;
+    const prev = parseFloat(calcPrevious);
+    const current = parseFloat(calcCurrent);
+    
+    if (isNaN(prev) || isNaN(current)) return;
+    
+    switch (calcOperation) {
+        case '+':
+            computation = prev + current;
+            break;
+        case '-':
+            computation = prev - current;
+            break;
+        case '*':
+            computation = prev * current;
+            break;
+        case '/':
+            if (current === 0) {
+                showNotification('Cannot divide by zero! ⚠️', 'error');
+                clearCalculator();
+                return;
+            }
+            computation = prev / current;
+            break;
+        default:
+            return;
+    }
+    
+    calcCurrent = String(Math.round(computation * 100000000) / 100000000);
+    calcOperation = null;
+    calcPrevious = '';
+    calcResetNext = true;
+    updateCalcDisplay();
+}
+
+function clearCalculator() {
+    calcCurrent = '';
+    calcPrevious = '';
+    calcOperation = null;
+    calcResetNext = false;
+    updateCalcDisplay();
+}
+
+function updateCalcDisplay() {
+    const display = document.getElementById('calcDisplay');
+    if (display) {
+        display.textContent = calcCurrent === '' ? '0' : calcCurrent;
+    }
+}
+
+// Add keyboard support for calculator
+document.addEventListener('keydown', (e) => {
+    // Calculator keyboard shortcuts
+    if (document.activeElement !== document.querySelector('#noteInput') && 
+        document.activeElement !== document.querySelector('#newTask')) {
+        const key = e.key;
+        
+        if (/[0-9]/.test(key)) {
+            calcInput(key);
+        } else if (key === '.') {
+            calcInput('.');
+        } else if (key === '+' || key === '-' || key === '*' || key === '/') {
+            calcOperator(key);
+        } else if (key === 'Enter') {
+            calcEquals();
+        } else if (key === 'Escape') {
+            clearCalculator();
+        } else if (key === 'Backspace') {
+            calcCurrent = calcCurrent.slice(0, -1);
+            updateCalcDisplay();
+        }
+    }
+});
+
+// Export keyboard shortcut (already added but adding Ctrl+E)
+document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
+        e.preventDefault();
+        exportData();
+    }
+});
+
 document.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'R') {
         e.preventDefault();

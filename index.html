@@ -176,6 +176,34 @@
                 </div>
             </div>
 
+            <!-- Focus History Widget -->
+            <div class="widget focus-history-widget">
+                <div class="widget-header">
+                    <span class="icon">📈</span>
+                    <h3>Focus History</h3>
+                    <button class="refresh-btn" onclick="refreshFocusHistory()" title="Refresh">🔄</button>
+                </div>
+                <div class="focus-stats-row">
+                    <div class="focus-stat">
+                        <span class="focus-stat-value" id="sessionsThisWeek">0</span>
+                        <span class="focus-stat-label">This Week</span>
+                    </div>
+                    <div class="focus-stat">
+                        <span class="focus-stat-value" id="totalFocusTime">0h</span>
+                        <span class="focus-stat-label">Total Time</span>
+                    </div>
+                </div>
+                <div class="weekly-chart" id="weeklyChart">
+                    <!-- Chart bars populated by JS -->
+                </div>
+                <div class="recent-sessions">
+                    <h4>Recent Sessions</h4>
+                    <ul class="sessions-list" id="sessionsList">
+                        <!-- Sessions populated by JS -->
+                    </ul>
+                </div>
+            </div>
+
             <!-- Habit Tracker Widget -->
             <div class="widget habit-widget">
                 <div class="widget-header">

@@ -30,6 +30,7 @@ let focusSessions = 0;
 let tasks = []; // Store tasks in memory
 let notes = []; // Store notes in memory
 let habits = []; // Store habits in memory
+let focusSessionHistory = []; // Store completed focus sessions with timestamps
 
 // PWA State
 let deferredPrompt = null;
@@ -85,7 +86,8 @@ function saveData() {
         focusSessions: focusSessions,
         tasks: tasks,
         notes: notes,
-        habits: habits
+        habits: habits,
+        focusSessionHistory: focusSessionHistory
     };
     localStorage.setItem('lumiDashboardData', JSON.stringify(data));
 }
@@ -101,7 +103,9 @@ function loadData() {
             tasks = data.tasks || [];
             notes = data.notes || [];
             habits = data.habits || [];
+            focusSessionHistory = data.focusSessionHistory || [];
             updateStats();
+            renderFocusHistory();
         } catch (e) {
             console.log('Error loading saved data:', e);
         }
@@ -455,10 +459,15 @@ function startTimer() {
             } else {
                 clearInterval(timerInterval);
                 isTimerRunning = false;
+                
+                // Log the completed focus session
+                const sessionDuration = getCurrentTimerDuration();
+                logFocusSession(sessionDuration);
+                
                 focusSessions++;
                 updateStats();
                 saveData();
-                alert('🎉 Focus session complete! Great job!');
+                showNotification('🎉 Focus session complete! Great job!', 'success');
                 resetTimer();
             }
         }, 1000);
@@ -495,6 +504,138 @@ function updateStats() {
 function refreshStats() {
     updateStats();
     showNotification('Stats refreshed! 📊', 'success');
+}
+
+// Focus Session History Functions
+function getCurrentTimerDuration() {
+    // Return duration in minutes based on current timer mode
+    const timerText = document.getElementById('timer').textContent;
+    const [minutes, seconds] = timerText.split(':').map(Number);
+    // When timer completes, timeLeft is 0, so we calculate from original value
+    if (document.getElementById('pomodoroModeBtn')?.classList.contains('active')) return 25;
+    if (document.getElementById('shortBreakModeBtn')?.classList.contains('active')) return 5;
+    if (document.getElementById('longBreakModeBtn')?.classList.contains('active')) return 15;
+    return 25; // Default to pomodoro
+}
+
+function logFocusSession(duration) {
+    const session = {
+        id: `session${Date.now()}`,
+        timestamp: new Date().toISOString(),
+        duration: duration,
+        type: getCurrentTimerType()
+    };
+    
+    focusSessionHistory.unshift(session); // Add to beginning
+    
+    // Keep only last 50 sessions
+    if (focusSessionHistory.length > 50) {
+        focusSessionHistory = focusSessionHistory.slice(0, 50);
+    }
+    
+    renderFocusHistory();
+}
+
+function getCurrentTimerType() {
+    if (document.getElementById('pomodoroModeBtn')?.classList.contains('active')) return 'pomodoro';
+    if (document.getElementById('shortBreakModeBtn')?.classList.contains('active')) return 'shortBreak';
+    if (document.getElementById('longBreakModeBtn')?.classList.contains('active')) return 'longBreak';
+    return 'pomodoro';
+}
+
+function renderFocusHistory() {
+    const sessionsList = document.getElementById('sessionsList');
+    const weeklyChart = document.getElementById('weeklyChart');
+    const sessionsThisWeekEl = document.getElementById('sessionsThisWeek');
+    const totalFocusTimeEl = document.getElementById('totalFocusTime');
+    
+    if (!sessionsList) return;
+    
+    // Calculate weekly stats
+    const now = new Date();
+    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const sessionsThisWeek = focusSessionHistory.filter(s => new Date(s.timestamp) >= oneWeekAgo).length;
+    
+    // Calculate total focus time
+    const totalMinutes = focusSessionHistory
+        .filter(s => s.type === 'pomodoro')
+        .reduce((sum, s) => sum + s.duration, 0);
+    const totalHours = Math.floor(totalMinutes / 60);
+    
+    // Update stats
+    if (sessionsThisWeekEl) sessionsThisWeekEl.textContent = sessionsThisWeek;
+    if (totalFocusTimeEl) totalFocusTimeEl.textContent = totalHours + 'h';
+    
+    // Render recent sessions list (last 5)
+    const recentSessions = focusSessionHistory.slice(0, 5);
+    if (recentSessions.length === 0) {
+        sessionsList.innerHTML = '<li class="session-item empty">No sessions yet. Start your first focus timer!</li>';
+    } else {
+        sessionsList.innerHTML = recentSessions.map(session => {
+            const date = new Date(session.timestamp);
+            const timeStr = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+            const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            const typeIcon = session.type === 'pomodoro' ? '🍅' : session.type === 'shortBreak' ? '☕' : '🌴';
+            const typeLabel = session.type === 'pomodoro' ? 'Focus' : session.type === 'shortBreak' ? 'Short Break' : 'Long Break';
+            
+            return `
+                <li class="session-item">
+                    <span class="session-icon">${typeIcon}</span>
+                    <span class="session-info">
+                        <span class="session-type">${typeLabel}</span>
+                        <span class="session-meta">${dateStr} • ${timeStr} • ${session.duration}m</span>
+                    </span>
+                </li>
+            `;
+        }).join('');
+    }
+    
+    // Render weekly chart
+    renderWeeklyChart(weeklyChart);
+}
+
+function renderWeeklyChart(chartEl) {
+    if (!chartEl) return;
+    
+    // Get sessions for last 7 days
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const today = new Date();
+    const weekData = [];
+    
+    for (let i = 6; i >= 0; i--) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+        const dateStr = date.toDateString();
+        
+        const count = focusSessionHistory.filter(s => {
+            const sessionDate = new Date(s.timestamp);
+            return sessionDate.toDateString() === dateStr && s.type === 'pomodoro';
+        }).length;
+        
+        weekData.push({
+            day: days[date.getDay()],
+            count: count,
+            isToday: i === 0
+        });
+    }
+    
+    const maxCount = Math.max(...weekData.map(d => d.count), 1);
+    
+    chartEl.innerHTML = weekData.map(d => {
+        const height = d.count === 0 ? 4 : Math.max((d.count / maxCount) * 100, 4);
+        const barClass = d.isToday ? 'bar today' : 'bar';
+        return `
+            <div class="chart-bar">
+                <div class="${barClass}" style="height: ${height}%" title="${d.count} sessions"></div>
+                <span class="bar-label">${d.day}</span>
+            </div>
+        `;
+    }).join('');
+}
+
+function refreshFocusHistory() {
+    renderFocusHistory();
+    showNotification('Focus history refreshed! 📈', 'success');
 }
 
 // Keyboard Shortcuts
@@ -553,9 +694,13 @@ function exportData() {
         tasks: tasks,
         notes: notes,
         habits: habits,
+        focusSessionHistory: focusSessionHistory,
         quotesSeen: quotesSeen,
         tasksCompleted: tasksCompleted,
         focusSessions: focusSessions,
+        exportDate: new Date().toISOString(),
+        version: '1.3'
+    };
         exportDate: new Date().toISOString(),
         version: '1.2'
     };
@@ -601,6 +746,10 @@ function importData() {
                 if (data.quotesSeen) quotesSeen = data.quotesSeen;
                 if (data.tasksCompleted) tasksCompleted = data.tasksCompleted;
                 if (data.focusSessions) focusSessions = data.focusSessions;
+                if (data.focusSessionHistory) {
+                    focusSessionHistory = data.focusSessionHistory;
+                    renderFocusHistory();
+                }
                 
                 updateStats();
                 saveData();
@@ -619,6 +768,7 @@ function resetData() {
         tasks = [];
         notes = [];
         habits = [];
+        focusSessionHistory = [];
         quotesSeen = 1;
         tasksCompleted = 0;
         focusSessions = 0;

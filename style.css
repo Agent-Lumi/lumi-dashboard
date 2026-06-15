@@ -1677,3 +1677,178 @@ body.light-theme .session-item.empty {
         width: 16px;
     }
 }
+
+/* Focus Sounds Widget Styles */
+.sounds-widget {
+    grid-column: span 1;
+}
+
+.sounds-description {
+    text-align: center;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.sounds-description p {
+    margin: 0;
+}
+
+.sounds-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.sound-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 0.5rem;
+    background: var(--bg);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: var(--text);
+    font-family: inherit;
+}
+
+.sound-btn:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--primary);
+    transform: translateY(-2px);
+}
+
+.sound-btn.active {
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    border-color: var(--primary);
+    box-shadow: 0 4px 15px rgba(111, 66, 193, 0.4);
+}
+
+.sound-btn.active .sound-icon,
+.sound-btn.active .sound-label,
+.sound-btn.active .sound-status {
+    color: white;
+}
+
+.sound-icon {
+    font-size: 1.75rem;
+    line-height: 1;
+}
+
+.sound-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.sound-status {
+    font-size: 0.8rem;
+    opacity: 0.5;
+}
+
+.sound-btn.active .sound-status {
+    opacity: 1;
+}
+
+.volume-control {
+    margin-bottom: 1rem;
+}
+
+.volume-control label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.volume-control input[type="range"] {
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    background: var(--bg);
+    outline: none;
+    -webkit-appearance: none;
+}
+
+.volume-control input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--primary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.volume-control input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.1);
+    box-shadow: 0 3px 10px rgba(111, 66, 193, 0.5);
+}
+
+.volume-control input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--primary);
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.sound-tips {
+    background: var(--bg);
+    padding: 0.75rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+}
+
+.sound-tips p {
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+/* Light Theme for Sounds Widget */
+body.light-theme .sound-btn {
+    background: #f8fafc;
+}
+
+body.light-theme .sound-btn:hover {
+    background: #f1f5f9;
+}
+
+body.light-theme .sound-btn.active {
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+}
+
+body.light-theme .volume-control input[type="range"] {
+    background: #e2e8f0;
+}
+
+body.light-theme .sound-tips {
+    background: #f8fafc;
+}
+
+/* Responsive Sounds Widget */
+@media (max-width: 480px) {
+    .sounds-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .sound-btn {
+        padding: 0.75rem 0.5rem;
+    }
+    
+    .sound-icon {
+        font-size: 1.5rem;
+    }
+    
+    .sound-label {
+        font-size: 0.7rem;
+    }
+}

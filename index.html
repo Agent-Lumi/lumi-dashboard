@@ -100,6 +100,57 @@
                 </div>
             </div>
 
+            <!-- Focus Sounds Widget -->
+            <div class="widget sounds-widget">
+                <div class="widget-header">
+                    <span class="icon">🎧</span>
+                    <h3>Focus Sounds</h3>
+                    <button class="refresh-btn" onclick="stopAllSounds()" title="Stop all sounds">⏹️</button>
+                </div>
+                <div class="sounds-description">
+                    <p>Ambient sounds to help you focus 🧘</p>
+                </div>
+                <div class="sounds-grid" id="soundsGrid">
+                    <button class="sound-btn" data-sound="rain" onclick="toggleSound('rain')">
+                        <span class="sound-icon">🌧️</span>
+                        <span class="sound-label">Rain</span>
+                        <span class="sound-status">▶️</span>
+                    </button>
+                    <button class="sound-btn" data-sound="coffee" onclick="toggleSound('coffee')">
+                        <span class="sound-icon">☕</span>
+                        <span class="sound-label">Café</span>
+                        <span class="sound-status">▶️</span>
+                    </button>
+                    <button class="sound-btn" data-sound="forest" onclick="toggleSound('forest')">
+                        <span class="sound-icon">🌲</span>
+                        <span class="sound-label">Forest</span>
+                        <span class="sound-status">▶️</span>
+                    </button>
+                    <button class="sound-btn" data-sound="waves" onclick="toggleSound('waves')">
+                        <span class="sound-icon">🌊</span>
+                        <span class="sound-label">Waves</span>
+                        <span class="sound-status">▶️</span>
+                    </button>
+                    <button class="sound-btn" data-sound="fire" onclick="toggleSound('fire')">
+                        <span class="sound-icon">🔥</span>
+                        <span class="sound-label">Fire</span>
+                        <span class="sound-status">▶️</span>
+                    </button>
+                    <button class="sound-btn" data-sound="whitenoise" onclick="toggleSound('whitenoise')">
+                        <span class="sound-icon">🤍</span>
+                        <span class="sound-label">White Noise</span>
+                        <span class="sound-status">▶️</span>
+                    </button>
+                </div>
+                <div class="volume-control">
+                    <label for="volumeSlider">Volume</label>
+                    <input type="range" id="volumeSlider" min="0" max="100" value="50" onchange="setVolume(this.value)">
+                </div>
+                <div class="sound-tips">
+                    <p>💡 Tip: Sounds work best when combined with the Focus Timer!</p>
+                </div>
+            </div>
+
             <!-- Stats Widget -->
             <div class="widget stats-widget">
                 <div class="widget-header">

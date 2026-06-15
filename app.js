@@ -1642,3 +1642,459 @@ function updateHabitStats() {
         completedTodayEl.textContent = `${completedToday}/${totalHabits}`;
     }
 }
+// Focus Sounds Feature - Ambient Sound Generator for Productivity
+// Created by Agent-Lumi on 2026-06-15
+
+// Sound Generation System using Web Audio API
+const FocusSounds = {
+    ctx: null,
+    activeSounds: new Map(),
+    masterGain: null,
+    volume: 0.5,
+    
+    init() {
+        if (!this.ctx) {
+            this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+            this.masterGain = this.ctx.createGain();
+            this.masterGain.connect(this.ctx.destination);
+            this.masterGain.gain.value = this.volume;
+        }
+        // Resume context if suspended (browser autoplay policy)
+        if (this.ctx.state === 'suspended') {
+            this.ctx.resume();
+        }
+        return this.ctx;
+    },
+    
+    // Generate white noise buffer
+    createWhiteNoiseBuffer() {
+        const bufferSize = this.ctx.sampleRate * 2; // 2 seconds
+        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const output = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+            output[i] = Math.random() * 2 - 1;
+        }
+        return buffer;
+    },
+    
+    // Generate brown noise (deeper, warmer) for rain
+    createBrownNoiseBuffer() {
+        const bufferSize = this.ctx.sampleRate * 2;
+        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const output = buffer.getChannelData(0);
+        let lastOut = 0;
+        for (let i = 0; i < bufferSize; i++) {
+            const white = Math.random() * 2 - 1;
+            output[i] = (lastOut + (0.02 * white)) / 1.02;
+            lastOut = output[i];
+            output[i] *= 3.5; // Gain
+        }
+        return buffer;
+    },
+    
+    // Generate pink noise for more natural sounds
+    createPinkNoiseBuffer() {
+        const bufferSize = this.ctx.sampleRate * 2;
+        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const output = buffer.getChannelData(0);
+        let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+        for (let i = 0; i < bufferSize; i++) {
+            const white = Math.random() * 2 - 1;
+            b0 = 0.99886 * b0 + white * 0.0555179;
+            b1 = 0.99332 * b1 + white * 0.0750759;
+            b2 = 0.96900 * b2 + white * 0.1538520;
+            b3 = 0.86650 * b3 + white * 0.3104856;
+            b4 = 0.55000 * b4 + white * 0.5329522;
+            b5 = -0.7616 * b5 - white * 0.0168980;
+            output[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
+            output[i] *= 0.11;
+            b6 = white * 0.115926;
+        }
+        return buffer;
+    },
+    
+    // Rain sound using filtered noise
+    createRain() {
+        this.init();
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = this.createBrownNoiseBuffer();
+        noise.loop = true;
+        
+        // Lowpass filter for rain effect
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.value = 800;
+        
+        // Gain node for volume
+        const gain = this.ctx.createGain();
+        gain.gain.value = 0.4;
+        
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.masterGain);
+        
+        noise.start();
+        return { source: noise, gain: gain };
+    },
+    
+    // Coffee shop ambience (pink noise with modulated filtering)
+    createCoffee() {
+        this.init();
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = this.createPinkNoiseBuffer();
+        noise.loop = true;
+        
+        // Bandpass filter for muffled room sound
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.value = 400;
+        filter.Q.value = 0.5;
+        
+        const gain = this.ctx.createGain();
+        gain.gain.value = 0.5;
+        
+        // Add subtle modulation
+        const lfo = this.ctx.createOscillator();
+        lfo.frequency.value = 0.1; // Very slow modulation
+        const lfoGain = this.ctx.createGain();
+        lfoGain.gain.value = 50;
+        lfo.connect(lfoGain);
+        lfoGain.connect(filter.frequency);
+        lfo.start();
+        
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.masterGain);
+        
+        return { source: noise, gain: gain, lfo: lfo };
+    },
+    
+    // Forest ambience (filtered noise + bird chirps)
+    createForest() {
+        this.init();
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = this.createPinkNoiseBuffer();
+        noise.loop = true;
+        
+        // Lowpass for wind/leaves
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.value = 600;
+        
+        const gain = this.ctx.createGain();
+        gain.gain.value = 0.3;
+        
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.masterGain);
+        
+        noise.start();
+        
+        // Schedule bird chirps
+        const scheduleBirdChirps = () => {
+            if (!this.activeSounds.has('forest')) return;
+            
+            const delay = Math.random() * 5000 + 3000; // 3-8 seconds
+            setTimeout(() => {
+                if (this.activeSounds.has('forest')) {
+                    this.playBirdChirp();
+                    scheduleBirdChirps();
+                }
+            }, delay);
+        };
+        scheduleBirdChirps();
+        
+        return { source: noise, gain: gain };
+    },
+    
+    // Bird chirp sound
+    playBirdChirp() {
+        if (!this.ctx) return;
+        
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(2000, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(3000, this.ctx.currentTime + 0.1);
+        
+        gain.gain.setValueAtTime(0, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.05, this.ctx.currentTime + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.15);
+        
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+        
+        osc.start(this.ctx.currentTime);
+        osc.stop(this.ctx.currentTime + 0.2);
+    },
+    
+    // Ocean waves using filtered noise with amplitude modulation
+    createWaves() {
+        this.init();
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = this.createBrownNoiseBuffer();
+        noise.loop = true;
+        
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.value = 400;
+        
+        // Amplitude modulation for wave rhythm
+        const lfo = this.ctx.createOscillator();
+        lfo.type = 'sine';
+        lfo.frequency.value = 0.15; // Slow wave cycle
+        
+        const lfoGain = this.ctx.createGain();
+        lfoGain.gain.value = 0.25;
+        
+        const gain = this.ctx.createGain();
+        gain.gain.value = 0.5;
+        
+        lfo.connect(lfoGain);
+        lfoGain.connect(gain.gain);
+        
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.masterGain);
+        
+        noise.start();
+        lfo.start();
+        
+        return { source: noise, gain: gain, lfo: lfo };
+    },
+    
+    // Crackling fire sound
+    createFire() {
+        this.init();
+        
+        const playCrackle = () => {
+            if (!this.activeSounds.has('fire')) return;
+            
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            const filter = this.ctx.createBiquadFilter();
+            
+            osc.type = 'sawtooth';
+            filter.type = 'lowpass';
+            filter.frequency.value = 100 + Math.random() * 200;
+            
+            const freq = 50 + Math.random() * 100;
+            osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+            
+            gain.gain.setValueAtTime(0, this.ctx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.1 + Math.random() * 0.1, this.ctx.currentTime + 0.01);
+            gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.1 + Math.random() * 0.1);
+            
+            osc.connect(filter);
+            filter.connect(gain);
+            gain.connect(this.masterGain);
+            
+            osc.start(this.ctx.currentTime);
+            osc.stop(this.ctx.currentTime + 0.2);
+            
+            // Schedule next crackle
+            setTimeout(playCrackle, Math.random() * 400 + 100);
+        };
+        
+        // Base fire rumble
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = this.createBrownNoiseBuffer();
+        noise.loop = true;
+        
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.value = 200;
+        
+        const gain = this.ctx.createGain();
+        gain.gain.value = 0.3;
+        
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.masterGain);
+        
+        noise.start();
+        playCrackle();
+        
+        return { source: noise, gain: gain };
+    },
+    
+    // White noise for concentration
+    createWhiteNoise() {
+        this.init();
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = this.createWhiteNoiseBuffer();
+        noise.loop = true;
+        
+        const gain = this.ctx.createGain();
+        gain.gain.value = 0.3;
+        
+        noise.connect(gain);
+        gain.connect(this.masterGain);
+        
+        noise.start();
+        return { source: noise, gain: gain };
+    },
+    
+    // Toggle a sound on/off
+    toggle(soundName) {
+        this.init();
+        
+        if (this.activeSounds.has(soundName)) {
+            // Stop the sound
+            const sound = this.activeSounds.get(soundName);
+            if (sound.source) {
+                try {
+                    sound.source.stop();
+                } catch (e) {}
+            }
+            if (sound.lfo) {
+                try {
+                    sound.lfo.stop();
+                } catch (e) {}
+            }
+            this.activeSounds.delete(soundName);
+            return false;
+        } else {
+            // Start the sound
+            let sound;
+            switch (soundName) {
+                case 'rain':
+                    sound = this.createRain();
+                    break;
+                case 'coffee':
+                    sound = this.createCoffee();
+                    break;
+                case 'forest':
+                    sound = this.createForest();
+                    break;
+                case 'waves':
+                    sound = this.createWaves();
+                    break;
+                case 'fire':
+                    sound = this.createFire();
+                    break;
+                case 'whitenoise':
+                    sound = this.createWhiteNoise();
+                    break;
+            }
+            if (sound) {
+                this.activeSounds.set(soundName, sound);
+            }
+            return true;
+        }
+    },
+    
+    // Stop all sounds
+    stopAll() {
+        this.activeSounds.forEach((sound, name) => {
+            if (sound.source) {
+                try {
+                    sound.source.stop();
+                } catch (e) {}
+            }
+            if (sound.lfo) {
+                try {
+                    sound.lfo.stop();
+                } catch (e) {}
+            }
+        });
+        this.activeSounds.clear();
+    },
+    
+    // Set master volume
+    setVolume(value) {
+        this.volume = value / 100;
+        if (this.masterGain) {
+            this.masterGain.gain.value = this.volume;
+        }
+        localStorage.setItem('focusSoundsVolume', value);
+    },
+    
+    // Load saved volume
+    loadVolume() {
+        const saved = localStorage.getItem('focusSoundsVolume');
+        if (saved !== null) {
+            this.volume = parseInt(saved) / 100;
+            if (this.masterGain) {
+                this.masterGain.gain.value = this.volume;
+            }
+            const slider = document.getElementById('volumeSlider');
+            if (slider) slider.value = saved;
+        }
+    }
+};
+
+// UI Functions for Focus Sounds
+function toggleSound(soundName) {
+    // Initialize audio context on first user interaction
+    if (!FocusSounds.ctx) {
+        FocusSounds.init();
+    }
+    
+    const isActive = FocusSounds.toggle(soundName);
+    const btn = document.querySelector(`[data-sound="${soundName}"]`);
+    const statusEl = btn?.querySelector('.sound-status');
+    
+    if (btn) {
+        btn.classList.toggle('active', isActive);
+    }
+    if (statusEl) {
+        statusEl.textContent = isActive ? '⏸️' : '▶️';
+    }
+    
+    // Save active sounds to localStorage
+    const activeSounds = Array.from(FocusSounds.activeSounds.keys());
+    localStorage.setItem('focusSoundsActive', JSON.stringify(activeSounds));
+}
+
+function stopAllSounds() {
+    FocusSounds.stopAll();
+    document.querySelectorAll('.sound-btn').forEach(btn => {
+        btn.classList.remove('active');
+        const status = btn.querySelector('.sound-status');
+        if (status) status.textContent = '▶️';
+    });
+    localStorage.removeItem('focusSoundsActive');
+}
+
+function setVolume(value) {
+    FocusSounds.setVolume(value);
+}
+
+// Restore active sounds on page load
+function restoreFocusSounds() {
+    FocusSounds.loadVolume();
+    const saved = localStorage.getItem('focusSoundsActive');
+    if (saved) {
+        try {
+            const activeSounds = JSON.parse(saved);
+            // Delay slightly to ensure audio context is ready
+            setTimeout(() => {
+                activeSounds.forEach(soundName => {
+                    const isActive = FocusSounds.toggle(soundName);
+                    const btn = document.querySelector(`[data-sound="${soundName}"]`);
+                    if (btn) {
+                        btn.classList.toggle('active', isActive);
+                        const status = btn.querySelector('.sound-status');
+                        if (status) status.textContent = '⏸️';
+                    }
+                });
+            }, 500);
+        } catch (e) {
+            console.log('Error restoring focus sounds:', e);
+        }
+    }
+}
+
+// Initialize focus sounds on page load
+document.addEventListener('DOMContentLoaded', () => {
+    // Wait for user interaction before restoring sounds (browser autoplay policy)
+    const initOnInteraction = () => {
+        restoreFocusSounds();
+        document.removeEventListener('click', initOnInteraction);
+        document.removeEventListener('keydown', initOnInteraction);
+    };
+    document.addEventListener('click', initOnInteraction);
+    document.addEventListener('keydown', initOnInteraction);
+});

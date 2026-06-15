@@ -710,11 +710,149 @@ window.startTimer = function() {
     }
 };
 
+// Calculator Keyboard Support
+let calcCurrentInput = '';
+let calcPreviousInput = '';
+let calcOperator = null;
+let calcShouldReset = false;
+
+function calcInput(value) {
+    const display = document.getElementById('calcDisplay');
+    
+    if (calcShouldReset) {
+        calcCurrentInput = '';
+        calcShouldReset = false;
+    }
+    
+    if (value === '.' && calcCurrentInput.includes('.')) {
+        return;
+    }
+    
+    calcCurrentInput += value;
+    display.textContent = calcCurrentInput || '0';
+}
+
+function calcOperator(op) {
+    if (calcCurrentInput === '') return;
+    
+    if (calcPreviousInput !== '') {
+        calcEquals();
+    }
+    
+    calcOperator = op;
+    calcPreviousInput = calcCurrentInput;
+    calcCurrentInput = '';
+}
+
+function calcEquals() {
+    if (calcOperator === null || calcPreviousInput === '' || calcCurrentInput === '') return;
+    
+    const prev = parseFloat(calcPreviousInput);
+    const current = parseFloat(calcCurrentInput);
+    let result;
+    
+    switch (calcOperator) {
+        case '+':
+            result = prev + current;
+            break;
+        case '-':
+            result = prev - current;
+            break;
+        case '*':
+            result = prev * current;
+            break;
+        case '/':
+            result = current === 0 ? 'Error' : prev / current;
+            break;
+        default:
+            return;
+    }
+    
+    const display = document.getElementById('calcDisplay');
+    display.textContent = result;
+    calcCurrentInput = result.toString();
+    calcPreviousInput = '';
+    calcOperator = null;
+    calcShouldReset = true;
+}
+
+function clearCalculator() {
+    calcCurrentInput = '';
+    calcPreviousInput = '';
+    calcOperator = null;
+    calcShouldReset = false;
+    document.getElementById('calcDisplay').textContent = '0';
+}
+
+// Calculator keyboard support
+document.addEventListener('keydown', (e) => {
+    // Only enable calculator keys when not in input fields
+    if (e.target.matches('input, textarea')) return;
+    
+    const key = e.key;
+    
+    // Number keys 0-9
+    if (/^[0-9]$/.test(key)) {
+        e.preventDefault();
+        calcInput(key);
+        highlightCalcButton(key);
+    }
+    // Operators
+    else if (key === '+' || key === '-' || key === '*' || key === '/') {
+        e.preventDefault();
+        calcOperator(key);
+        highlightCalcButton(key === '*' ? '×' : key === '/' ? '÷' : key);
+    }
+    // Equals and Enter
+    else if (key === 'Enter' || key === '=') {
+        e.preventDefault();
+        calcEquals();
+        const equalsBtn = document.querySelector('.calculator-grid button.equals');
+        if (equalsBtn) {
+            equalsBtn.style.transform = 'scale(0.95)';
+            setTimeout(() => equalsBtn.style.transform = '', 100);
+        }
+    }
+    // Decimal
+    else if (key === '.') {
+        e.preventDefault();
+        calcInput('.');
+        highlightCalcButton('.');
+    }
+    // Clear (Escape or C)
+    else if (key === 'Escape' || key === 'c' || key === 'C') {
+        e.preventDefault();
+        clearCalculator();
+        const clearBtn = document.querySelector('.calculator-widget .refresh-btn');
+        if (clearBtn) {
+            clearBtn.style.transform = 'scale(0.95)';
+            setTimeout(() => clearBtn.style.transform = '', 100);
+        }
+    }
+    // Backspace
+    else if (key === 'Backspace') {
+        e.preventDefault();
+        calcCurrentInput = calcCurrentInput.slice(0, -1);
+        document.getElementById('calcDisplay').textContent = calcCurrentInput || '0';
+    }
+});
+
+function highlightCalcButton(key) {
+    const buttons = document.querySelectorAll('.calculator-grid button');
+    buttons.forEach(btn => {
+        if (btn.textContent === key) {
+            btn.style.transform = 'scale(0.95)';
+            setTimeout(() => btn.style.transform = '', 100);
+        }
+    });
+}
+
 // Console Easter Egg
 console.log('%c💡 Lumi Dashboard', 'font-size: 24px; font-weight: bold; color: #6f42c1;');
 console.log('%cMade with love by Agent-Lumi for @shalkith', 'font-size: 14px; color: #8b5cf6;');
 console.log('%c"Bright, warm, and here to help light the way!"', 'font-style: italic; color: #a1a1aa;');
 console.log('%c📱 PWA Enabled - Install for offline access!', 'font-size: 12px; color: #22c55e;');
+console.log('%c⌨️ Calculator Keyboard Support: 0-9, +, -, *, /, Enter, ., C, Backspace', 'font-size: 12px; color: #3b82f6;');
 
 // PWA Functions
 function initPWA() {

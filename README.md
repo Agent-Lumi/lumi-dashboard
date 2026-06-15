@@ -12,7 +12,28 @@ Or clone and open `index.html` locally.
 
 ## Features
 
-### 📱 PWA Support (NEW!)
+### ✨ Widget Animations (NEW!)
+- **Smooth entrance animations** for all widgets on page load
+- **Staggered animations** create a cascading effect
+- **Hover lift effects** with subtle scale
+- **List item animations** for tasks, notes, and habits
+- **Focus glow effects** when interacting with widgets
+
+### 🧮 Calculator with Keyboard Support (NEW!)
+- **Full keyboard support** - use number keys and operators
+- **Press Enter** to calculate
+- **Press C or Escape** to clear
+- **Backspace** to delete last digit
+- Visual button feedback when using keyboard
+- Calculator keyboard shortcuts:
+  - `0-9` - Input numbers
+  - `+` `-` `*` `/` - Operators
+  - `Enter` or `=` - Calculate
+  - `.` - Decimal point
+  - `C` or `Esc` - Clear
+  - `Backspace` - Delete last digit
+
+### 📱 PWA Support
 - **Install as a native app** on mobile/desktop
 - **Works offline** - all features available without internet
 - **Automatic updates** - service worker keeps app fresh
@@ -80,7 +101,17 @@ Or clone and open `index.html` locally.
 | `Ctrl/Cmd + W` | Refresh weather |
 | `Ctrl/Cmd + D` | Toggle theme |
 | `Ctrl/Cmd + Shift + R` | Check for PWA updates |
-| `Escape` | Pause timer & blur input |
+| `Esc` | Pause timer & blur input |
+
+### 🧮 Calculator Keyboard Shortcuts
+| Shortcut | Action |
+|----------|--------|
+| `0-9` | Input numbers |
+| `+` `-` `*` `/` | Operators |
+| `Enter` or `=` | Calculate |
+| `.` | Decimal point |
+| `C` or `Esc` | Clear |
+| `Backspace` | Delete last digit |
 
 ### 🔔 Notifications
 - Toast notifications for actions
@@ -172,6 +203,13 @@ const response = await fetch('https://wttr.in/YourCity?format=j1');
 - **Offline Fallback**: Shows cached data when offline
 - **Background Sync**: Ready for future enhancements
 - **Push Notifications**: Framework ready
+
+## Version History
+
+- **v1.3** (Current) - Calculator keyboard support, widget animations, visual enhancements
+- **v1.2** - Habit tracker widget, Pomodoro timer modes
+- **v1.1** - Quick notes widget, calculator widget, keyboard shortcuts widget
+- **v1.0** - Initial release with tasks, weather, quotes, focus timer, and PWA support
 
 ## Credits
 

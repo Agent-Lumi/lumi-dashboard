@@ -176,6 +176,37 @@
                 </div>
             </div>
 
+            <!-- Habit Tracker Widget -->
+            <div class="widget habit-widget">
+                <div class="widget-header">
+                    <span class="icon">🔥</span>
+                    <h3>Habit Tracker</h3>
+                    <button class="add-btn" onclick="addHabit()">+</button>
+                </div>
+                <div class="habit-stats" id="habitStats">
+                    <div class="habit-stat">
+                        <span class="habit-stat-value" id="currentStreak">0</span>
+                        <span class="habit-stat-label">Day Streak</span>
+                    </div>
+                    <div class="habit-stat">
+                        <span class="habit-stat-value" id="completedToday">0</span>
+                        <span class="habit-stat-label">Done Today</span>
+                    </div>
+                </div>
+                <ul class="habit-list" id="habitList">
+                    <!-- Habits populated by JS -->
+                </ul>
+                <div class="habit-input-area">
+                    <input type="text" id="newHabit" placeholder="Add a new habit..." onkeypress="handleHabitKeypress(event)">
+                    <button onclick="addHabit()" class="add-habit-btn">Add</button>
+                </div>
+                <div class="habit-legend">
+                    <span class="legend-item"><span class="legend-dot completed"></span> Done</span>
+                    <span class="legend-item"><span class="legend-dot missed"></span> Missed</span>
+                    <span class="legend-item"><span class="legend-dot upcoming"></span> Upcoming</span>
+                </div>
+            </div>
+
             <!-- Keyboard Shortcuts Widget -->
             <div class="widget shortcuts-widget">
                 <div class="widget-header">
@@ -206,6 +237,10 @@
                     <div class="shortcut-item">
                         <kbd>Ctrl</kbd> + <kbd>E</kbd>
                         <span>Export data</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Ctrl</kbd> + <kbd>H</kbd>
+                        <span>Focus habit input</span>
                     </div>
                     <div class="shortcut-item">
                         <kbd>Esc</kbd>

@@ -29,6 +29,7 @@ let tasksCompleted = 0;
 let focusSessions = 0;
 let tasks = []; // Store tasks in memory
 let notes = []; // Store notes in memory
+let habits = []; // Store habits in memory
 
 // PWA State
 let deferredPrompt = null;
@@ -48,6 +49,8 @@ document.addEventListener('DOMContentLoaded', () => {
     loadTasks(); // Load saved tasks
     loadNotes(); // Load saved notes
     setupNotesListeners();
+    loadHabits(); // Load saved habits
+    setupHabitListeners();
     initPWA(); // Initialize PWA features
 });
 
@@ -81,7 +84,8 @@ function saveData() {
         tasksCompleted: tasksCompleted,
         focusSessions: focusSessions,
         tasks: tasks,
-        notes: notes
+        notes: notes,
+        habits: habits
     };
     localStorage.setItem('lumiDashboardData', JSON.stringify(data));
 }
@@ -96,6 +100,7 @@ function loadData() {
             focusSessions = data.focusSessions || 0;
             tasks = data.tasks || [];
             notes = data.notes || [];
+            habits = data.habits || [];
             updateStats();
         } catch (e) {
             console.log('Error loading saved data:', e);
@@ -495,7 +500,7 @@ function refreshStats() {
 // Keyboard Shortcuts
 document.addEventListener('keydown', (e) => {
     // Space to start/pause timer when focus widget is visible
-    if (e.code === 'Space' && !e.target.matches('input')) {
+    if (e.code === 'Space' && !e.target.matches('input, textarea')) {
         e.preventDefault();
         if (isTimerRunning) {
             pauseTimer();
@@ -508,6 +513,12 @@ document.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 't') {
         e.preventDefault();
         document.getElementById('newTask')?.focus();
+    }
+    
+    // Ctrl/Cmd + H - Focus habit input
+    if ((e.ctrlKey || e.metaKey) && e.key === 'h') {
+        e.preventDefault();
+        document.getElementById('newHabit')?.focus();
     }
     
     // Ctrl/Cmd + R - Refresh quote
@@ -532,6 +543,7 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
         pauseTimer();
         document.getElementById('newTask')?.blur();
+        document.getElementById('newHabit')?.blur();
     }
 });
 
@@ -540,11 +552,12 @@ function exportData() {
     const data = {
         tasks: tasks,
         notes: notes,
+        habits: habits,
         quotesSeen: quotesSeen,
         tasksCompleted: tasksCompleted,
         focusSessions: focusSessions,
         exportDate: new Date().toISOString(),
-        version: '1.1'
+        version: '1.2'
     };
     
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -581,6 +594,10 @@ function importData() {
                     notes = data.notes;
                     loadNotes();
                 }
+                if (data.habits) {
+                    habits = data.habits;
+                    loadHabits();
+                }
                 if (data.quotesSeen) quotesSeen = data.quotesSeen;
                 if (data.tasksCompleted) tasksCompleted = data.tasksCompleted;
                 if (data.focusSessions) focusSessions = data.focusSessions;
@@ -601,6 +618,7 @@ function resetData() {
     if (confirm('Are you sure you want to reset all data? This cannot be undone.')) {
         tasks = [];
         notes = [];
+        habits = [];
         quotesSeen = 1;
         tasksCompleted = 0;
         focusSessions = 0;
@@ -620,6 +638,7 @@ function resetData() {
         `;
         setupTaskListeners();
         loadNotes();
+        loadHabits();
         updateStats();;
         
         showNotification('Data reset successfully! 🔄', 'success');
@@ -1094,5 +1113,244 @@ function clearNotes() {
         saveData();
         loadNotes();
         showNotification('All notes cleared! 🗑️', 'success');
+    }
+}
+
+// Habit Tracker Functions
+let habits = []; // Store habits in memory
+
+function setupHabitListeners() {
+    const habitInput = document.getElementById('newHabit');
+    if (habitInput) {
+        habitInput.addEventListener('keydown', handleHabitKeypress);
+    }
+}
+
+function handleHabitKeypress(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        addHabit();
+    }
+}
+
+function getTodayString() {
+    return new Date().toISOString().split('T')[0];
+}
+
+function getLast7Days() {
+    const days = [];
+    for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        days.push(d.toISOString().split('T')[0]);
+    }
+    return days;
+}
+
+function calculateStreak(habit) {
+    const dates = Object.keys(habit.completedDates).sort().reverse();
+    if (dates.length === 0) return 0;
+    
+    const today = getTodayString();
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+    
+    // If not completed today and not yesterday, streak is broken
+    if (!habit.completedDates[today] && !habit.completedDates[yesterdayStr]) {
+        return 0;
+    }
+    
+    // Count consecutive days
+    let streak = 0;
+    let checkDate = new Date();
+    
+    // Start from today, go backwards
+    while (true) {
+        const dateStr = checkDate.toISOString().split('T')[0];
+        if (habit.completedDates[dateStr]) {
+            streak++;
+            checkDate.setDate(checkDate.getDate() - 1);
+        } else {
+            // If today is not completed, check if yesterday was
+            if (dateStr === today && streak === 0) {
+                checkDate.setDate(checkDate.getDate() - 1);
+                continue;
+            }
+            break;
+        }
+    }
+    
+    return streak;
+}
+
+function getStreakEmoji(streak) {
+    if (streak >= 30) return '🔥🔥🔥';
+    if (streak >= 14) return '🔥🔥';
+    if (streak >= 7) return '🔥';
+    return '';
+}
+
+function loadHabits() {
+    const habitList = document.getElementById('habitList');
+    if (!habitList) return;
+    
+    if (habits.length === 0) {
+        habitList.innerHTML = `
+            <li class="habit-empty">
+                <div class="habit-empty-icon">🔥</div>
+                <div>No habits yet</div>
+                <div style="font-size: 0.85rem; margin-top: 0.25rem;">Start building streaks! Add your first habit above.</div>
+            </li>
+        `;
+        updateHabitStats();
+        return;
+    }
+    
+    habitList.innerHTML = '';
+    const last7Days = getLast7Days();
+    const today = getTodayString();
+    
+    habits.forEach(habit => {
+        const streak = calculateStreak(habit);
+        const isCompletedToday = habit.completedDates[today] || false;
+        const streakEmoji = getStreakEmoji(streak);
+        
+        const li = document.createElement('li');
+        li.className = `habit-item ${isCompletedToday ? 'completed' : ''}`;
+        li.dataset.habitId = habit.id;
+        
+        // Build history dots
+        let historyHtml = '';
+        last7Days.forEach(date => {
+            const isCompleted = habit.completedDates[date] || false;
+            const isToday = date === today;
+            const className = isCompleted ? 'completed' : (isToday ? '' : 'missed');
+            const title = isToday ? 'Today' : date.slice(5);
+            historyHtml += `<span class="history-dot ${className} ${isToday ? 'today' : ''}" title="${title}: ${isCompleted ? 'Completed' : (isToday ? 'Pending' : 'Missed')}"></span>`;
+        });
+        
+        li.innerHTML = `
+            <div class="habit-checkbox ${isCompletedToday ? 'completed' : ''}" onclick="toggleHabit('${habit.id}')" title="${isCompletedToday ? 'Mark incomplete' : 'Mark complete'}"></div>
+            <div class="habit-info">
+                <div class="habit-name">${escapeHtml(habit.name)}</div>
+                <div class="habit-meta">
+                    <span class="habit-streak ${streak >= 7 ? 'fire' : ''}">${streakEmoji} ${streak} day streak</span>
+                </div>
+            </div>
+            <div class="habit-history">
+                ${historyHtml}
+            </div>
+            <button class="delete-habit" onclick="deleteHabit('${habit.id}')" title="Delete habit">×</button>
+        `;
+        
+        habitList.appendChild(li);
+    });
+    
+    updateHabitStats();
+}
+
+function toggleHabit(habitId) {
+    const habit = habits.find(h => h.id === habitId);
+    if (!habit) return;
+    
+    const today = getTodayString();
+    const wasCompleted = habit.completedDates[today] || false;
+    
+    if (wasCompleted) {
+        delete habit.completedDates[today];
+        showNotification('Habit unchecked 💪', 'info');
+    } else {
+        habit.completedDates[today] = true;
+        const streak = calculateStreak(habit);
+        if (streak >= 7) {
+            showNotification(`🔥 ${streak} day streak! Keep it up!`, 'success');
+        } else {
+            showNotification('Habit completed! Great job! ✅', 'success');
+        }
+    }
+    
+    saveData();
+    loadHabits();
+}
+
+function addHabit() {
+    const input = document.getElementById('newHabit');
+    const habitName = input.value.trim();
+    
+    if (!habitName) {
+        showNotification('Please enter a habit name first! 📝', 'error');
+        return;
+    }
+    
+    // Check for duplicates
+    if (habits.some(h => h.name.toLowerCase() === habitName.toLowerCase())) {
+        showNotification('Habit already exists! 🔄', 'error');
+        return;
+    }
+    
+    const newHabit = {
+        id: `habit_${Date.now()}`,
+        name: habitName,
+        createdAt: Date.now(),
+        completedDates: {}
+    };
+    
+    habits.push(newHabit);
+    saveData();
+    
+    input.value = '';
+    loadHabits();
+    
+    showNotification('Habit added! Start your streak! 🚀', 'success');
+}
+
+function deleteHabit(habitId) {
+    const habitEl = document.querySelector(`[data-habit-id="${habitId}"]`);
+    if (habitEl) {
+        habitEl.style.animation = 'slideOut 0.3s ease-in';
+        setTimeout(() => {
+            habits = habits.filter(h => h.id !== habitId);
+            saveData();
+            loadHabits();
+        }, 300);
+    }
+}
+
+function updateHabitStats() {
+    const today = getTodayString();
+    const completedToday = habits.filter(h => h.completedDates[today]).length;
+    const totalHabits = habits.length;
+    
+    // Calculate current streak (streak of days where at least one habit was completed)
+    let currentStreak = 0;
+    const checkDate = new Date();
+    
+    while (true) {
+        const dateStr = checkDate.toISOString().split('T')[0];
+        const anyCompleted = habits.some(h => h.completedDates[dateStr]);
+        
+        if (anyCompleted || (dateStr === today && completedToday > 0)) {
+            currentStreak++;
+            checkDate.setDate(checkDate.getDate() - 1);
+        } else {
+            break;
+        }
+    }
+    
+    const currentStreakEl = document.getElementById('currentStreak');
+    const completedTodayEl = document.getElementById('completedToday');
+    
+    if (currentStreakEl) {
+        currentStreakEl.textContent = currentStreak;
+        if (currentStreak >= 7) {
+            currentStreakEl.classList.add('streak-fire');
+        } else {
+            currentStreakEl.classList.remove('streak-fire');
+        }
+    }
+    
+    if (completedTodayEl) {
+        completedTodayEl.textContent = `${completedToday}/${totalHabits}`;
     }
 }

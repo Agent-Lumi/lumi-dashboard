@@ -701,9 +701,6 @@ function exportData() {
         exportDate: new Date().toISOString(),
         version: '1.3'
     };
-        exportDate: new Date().toISOString(),
-        version: '1.2'
-    };
     
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -863,7 +860,7 @@ window.startTimer = function() {
 // Calculator Keyboard Support
 let calcCurrentInput = '';
 let calcPreviousInput = '';
-let calcOperator = null;
+let calcCurrentOperator = null;
 let calcShouldReset = false;
 
 function calcInput(value) {
@@ -889,19 +886,19 @@ function calcOperator(op) {
         calcEquals();
     }
     
-    calcOperator = op;
+    calcCurrentOperator = op;
     calcPreviousInput = calcCurrentInput;
     calcCurrentInput = '';
 }
 
 function calcEquals() {
-    if (calcOperator === null || calcPreviousInput === '' || calcCurrentInput === '') return;
+    if (calcCurrentOperator === null || calcPreviousInput === '' || calcCurrentInput === '') return;
     
     const prev = parseFloat(calcPreviousInput);
     const current = parseFloat(calcCurrentInput);
     let result;
     
-    switch (calcOperator) {
+    switch (calcCurrentOperator) {
         case '+':
             result = prev + current;
             break;
@@ -922,14 +919,14 @@ function calcEquals() {
     display.textContent = result;
     calcCurrentInput = result.toString();
     calcPreviousInput = '';
-    calcOperator = null;
+    calcCurrentOperator = null;
     calcShouldReset = true;
 }
 
 function clearCalculator() {
     calcCurrentInput = '';
     calcPreviousInput = '';
-    calcOperator = null;
+    calcCurrentOperator = null;
     calcShouldReset = false;
     document.getElementById('calcDisplay').textContent = '0';
 }
@@ -1164,110 +1161,6 @@ function setTimerMode(mode) {
     }
 }
 
-// Calculator Functions
-let calcCurrent = '';
-let calcPrevious = '';
-let calcOperation = null;
-let calcResetNext = false;
-
-function calcInput(number) {
-    if (calcResetNext) {
-        calcCurrent = '';
-        calcResetNext = false;
-    }
-    
-    // Prevent multiple decimals
-    if (number === '.' && calcCurrent.includes('.')) return;
-    
-    calcCurrent += number;
-    updateCalcDisplay();
-}
-
-function calcOperator(op) {
-    if (calcCurrent === '') return;
-    if (calcPrevious !== '') {
-        calcEquals();
-    }
-    calcOperation = op;
-    calcPrevious = calcCurrent;
-    calcCurrent = '';
-}
-
-function calcEquals() {
-    let computation;
-    const prev = parseFloat(calcPrevious);
-    const current = parseFloat(calcCurrent);
-    
-    if (isNaN(prev) || isNaN(current)) return;
-    
-    switch (calcOperation) {
-        case '+':
-            computation = prev + current;
-            break;
-        case '-':
-            computation = prev - current;
-            break;
-        case '*':
-            computation = prev * current;
-            break;
-        case '/':
-            if (current === 0) {
-                showNotification('Cannot divide by zero! ⚠️', 'error');
-                clearCalculator();
-                return;
-            }
-            computation = prev / current;
-            break;
-        default:
-            return;
-    }
-    
-    calcCurrent = String(Math.round(computation * 100000000) / 100000000);
-    calcOperation = null;
-    calcPrevious = '';
-    calcResetNext = true;
-    updateCalcDisplay();
-}
-
-function clearCalculator() {
-    calcCurrent = '';
-    calcPrevious = '';
-    calcOperation = null;
-    calcResetNext = false;
-    updateCalcDisplay();
-}
-
-function updateCalcDisplay() {
-    const display = document.getElementById('calcDisplay');
-    if (display) {
-        display.textContent = calcCurrent === '' ? '0' : calcCurrent;
-    }
-}
-
-// Add keyboard support for calculator
-document.addEventListener('keydown', (e) => {
-    // Calculator keyboard shortcuts
-    if (document.activeElement !== document.querySelector('#noteInput') && 
-        document.activeElement !== document.querySelector('#newTask')) {
-        const key = e.key;
-        
-        if (/[0-9]/.test(key)) {
-            calcInput(key);
-        } else if (key === '.') {
-            calcInput('.');
-        } else if (key === '+' || key === '-' || key === '*' || key === '/') {
-            calcOperator(key);
-        } else if (key === 'Enter') {
-            calcEquals();
-        } else if (key === 'Escape') {
-            clearCalculator();
-        } else if (key === 'Backspace') {
-            calcCurrent = calcCurrent.slice(0, -1);
-            updateCalcDisplay();
-        }
-    }
-});
-
 // Export keyboard shortcut (already added but adding Ctrl+E)
 document.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
@@ -1405,7 +1298,6 @@ function clearNotes() {
 }
 
 // Habit Tracker Functions
-let habits = []; // Store habits in memory
 
 function setupHabitListeners() {
     const habitInput = document.getElementById('newHabit');

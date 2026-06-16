@@ -1,7 +1,7 @@
 // Lumi Dashboard Service Worker
 // Provides offline support and caching
 
-const CACHE_NAME = 'lumi-dashboard-v1-3';
+const CACHE_NAME = 'lumi-dashboard-v1-3-1';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
